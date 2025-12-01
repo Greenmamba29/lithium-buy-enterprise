@@ -2,87 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 
-/* LIGHT MODE */
+/* LIGHT MODE - LithiumBuy Enterprise Theme */
 :root {
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
   --opaque-button-border-intensity: -8;
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
-  --background: 0 0% 100%;
-  --foreground: 211 45% 15%;
-  --border: 0 0% 90%;
-  --card: 0 0% 98%;
-  --card-foreground: 211 45% 15%;
-  --card-border: 0 0% 94%;
-  --sidebar: 0 0% 96%;
-  --sidebar-foreground: 211 45% 15%;
-  --sidebar-border: 0 0% 92%;
-  --sidebar-primary: 211 65% 28%;
-  --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 211 12% 88%;
-  --sidebar-accent-foreground: 211 45% 15%;
-  --sidebar-ring: 211 65% 28%;
-  --popover: 0 0% 96%;
-  --popover-foreground: 211 45% 15%;
-  --popover-border: 0 0% 92%;
-  --primary: 211 65% 28%;
+  --background: 210 20% 98%;
+  --foreground: 210 40% 18%;
+  --border: 210 15% 88%;
+  --card: 0 0% 100%;
+  --card-foreground: 210 40% 18%;
+  --card-border: 210 15% 92%;
+  --sidebar: 211 65% 23%;
+  --sidebar-foreground: 0 0% 98%;
+  --sidebar-border: 211 60% 20%;
+  --sidebar-primary: 42 76% 53%;
+  --sidebar-primary-foreground: 211 65% 15%;
+  --sidebar-accent: 211 55% 30%;
+  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-ring: 42 76% 53%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 210 40% 18%;
+  --popover-border: 210 15% 90%;
+  --primary: 211 65% 23%;
   --primary-foreground: 0 0% 98%;
-  --secondary: 211 8% 90%;
-  --secondary-foreground: 211 45% 15%;
-  --muted: 211 6% 92%;
-  --muted-foreground: 211 25% 35%;
-  --accent: 211 10% 94%;
-  --accent-foreground: 211 45% 15%;
-  --destructive: 0 72% 42%;
+  --secondary: 210 12% 92%;
+  --secondary-foreground: 210 40% 18%;
+  --muted: 210 10% 94%;
+  --muted-foreground: 210 20% 45%;
+  --accent: 210 15% 96%;
+  --accent-foreground: 210 40% 18%;
+  --destructive: 0 72% 50%;
   --destructive-foreground: 0 0% 98%;
-  --input: 0 0% 75%;
-  --ring: 211 65% 28%;
-  --chart-1: 211 65% 28%;
-  --chart-2: 42 88% 48%;
+  --input: 210 15% 75%;
+  --ring: 211 65% 23%;
+  --chart-1: 211 65% 23%;
+  --chart-2: 42 76% 53%;
   --chart-3: 152 56% 48%;
-  --chart-4: 15 85% 58%;
+  --chart-4: 18 85% 55%;
   --chart-5: 283 39% 44%;
-  --font-sans: Inter, Source Sans Pro, sans-serif;
+  
+  --cta: 18 85% 55%;
+  --cta-foreground: 0 0% 100%;
+  --success: 152 56% 48%;
+  --success-foreground: 0 0% 100%;
+  --gold: 42 76% 53%;
+  --gold-foreground: 42 76% 15%;
+  --silver: 0 0% 75%;
+  --bronze: 25 60% 50%;
+  --professional-blue: 211 65% 55%;
+  
+  --font-sans: 'Inter', 'Source Sans 3', system-ui, sans-serif;
   --font-serif: Georgia, serif;
-  --font-mono: Menlo, monospace;
-  --radius: .5rem;
-  --shadow-2xs: 0px 2px 0px 0px hsl(211 65% 28% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(211 65% 28% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(211 65% 28% / 0.00), 0px 1px 2px -1px hsl(211 65% 28% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(211 65% 28% / 0.00), 0px 1px 2px -1px hsl(211 65% 28% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(211 65% 28% / 0.00), 0px 2px 4px -1px hsl(211 65% 28% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(211 65% 28% / 0.00), 0px 4px 6px -1px hsl(211 65% 28% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(211 65% 28% / 0.00), 0px 8px 10px -1px hsl(211 65% 28% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(211 65% 28% / 0.00);
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: .375rem;
+  --shadow-2xs: 0 1px 2px rgba(27, 54, 93, 0.04);
+  --shadow-xs: 0 1px 3px rgba(27, 54, 93, 0.06);
+  --shadow-sm: 0 2px 4px rgba(27, 54, 93, 0.08);
+  --shadow: 0 4px 6px rgba(27, 54, 93, 0.08);
+  --shadow-md: 0 6px 12px rgba(27, 54, 93, 0.1);
+  --shadow-lg: 0 10px 20px rgba(27, 54, 93, 0.12);
+  --shadow-xl: 0 16px 32px rgba(27, 54, 93, 0.14);
+  --shadow-2xl: 0 24px 48px rgba(27, 54, 93, 0.18);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 
-/* Fallback for older browsers */
   --sidebar-primary-border: hsl(var(--sidebar-primary));
   --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --sidebar-accent-border: hsl(var(--sidebar-accent));
   --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --primary-border: hsl(var(--primary));
   --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --secondary-border: hsl(var(--secondary));
   --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --muted-border: hsl(var(--muted));
   --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --accent-border: hsl(var(--accent));
   --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --destructive-border: hsl(var(--destructive));
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
@@ -93,74 +91,72 @@
   --opaque-button-border-intensity: 9;
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
-  --background: 211 22% 8%;
-  --foreground: 0 0% 96%;
-  --border: 211 18% 16%;
-  --card: 211 20% 10%;
-  --card-foreground: 0 0% 96%;
-  --card-border: 211 18% 13%;
-  --sidebar: 211 20% 12%;
-  --sidebar-foreground: 0 0% 96%;
-  --sidebar-border: 211 18% 15%;
-  --sidebar-primary: 211 65% 28%;
-  --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 211 16% 16%;
-  --sidebar-accent-foreground: 0 0% 96%;
-  --sidebar-ring: 211 65% 28%;
-  --popover: 211 20% 14%;
-  --popover-foreground: 0 0% 96%;
-  --popover-border: 211 18% 17%;
-  --primary: 211 65% 28%;
+  --background: 211 25% 9%;
+  --foreground: 210 15% 95%;
+  --border: 211 20% 18%;
+  --card: 211 22% 12%;
+  --card-foreground: 210 15% 95%;
+  --card-border: 211 20% 16%;
+  --sidebar: 211 30% 8%;
+  --sidebar-foreground: 210 15% 95%;
+  --sidebar-border: 211 25% 12%;
+  --sidebar-primary: 42 76% 53%;
+  --sidebar-primary-foreground: 211 65% 10%;
+  --sidebar-accent: 211 25% 16%;
+  --sidebar-accent-foreground: 210 15% 95%;
+  --sidebar-ring: 42 76% 53%;
+  --popover: 211 22% 14%;
+  --popover-foreground: 210 15% 95%;
+  --popover-border: 211 20% 18%;
+  --primary: 211 55% 40%;
   --primary-foreground: 0 0% 98%;
-  --secondary: 211 14% 18%;
-  --secondary-foreground: 0 0% 96%;
-  --muted: 211 12% 16%;
-  --muted-foreground: 211 15% 70%;
-  --accent: 211 12% 14%;
-  --accent-foreground: 0 0% 96%;
-  --destructive: 0 72% 42%;
+  --secondary: 211 18% 20%;
+  --secondary-foreground: 210 15% 95%;
+  --muted: 211 15% 18%;
+  --muted-foreground: 211 12% 65%;
+  --accent: 211 18% 16%;
+  --accent-foreground: 210 15% 95%;
+  --destructive: 0 72% 50%;
   --destructive-foreground: 0 0% 98%;
-  --input: 0 0% 30%;
-  --ring: 211 65% 28%;
-  --chart-1: 211 75% 55%;
-  --chart-2: 42 95% 65%;
-  --chart-3: 152 65% 60%;
-  --chart-4: 15 90% 68%;
-  --chart-5: 283 50% 65%;
-  --shadow-2xs: 0px 2px 0px 0px hsl(211 65% 28% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(211 65% 28% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(211 65% 28% / 0.00), 0px 1px 2px -1px hsl(211 65% 28% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(211 65% 28% / 0.00), 0px 1px 2px -1px hsl(211 65% 28% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(211 65% 28% / 0.00), 0px 2px 4px -1px hsl(211 65% 28% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(211 65% 28% / 0.00), 0px 4px 6px -1px hsl(211 65% 28% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(211 65% 28% / 0.00), 0px 8px 10px -1px hsl(211 65% 28% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(211 65% 28% / 0.00);
+  --input: 211 15% 30%;
+  --ring: 211 55% 40%;
+  --chart-1: 211 65% 50%;
+  --chart-2: 42 85% 58%;
+  --chart-3: 152 55% 55%;
+  --chart-4: 18 80% 60%;
+  --chart-5: 283 45% 60%;
 
-/* Fallback for older browsers */
+  --cta: 18 85% 55%;
+  --cta-foreground: 0 0% 100%;
+  --success: 152 56% 48%;
+  --success-foreground: 0 0% 100%;
+  --gold: 42 76% 53%;
+  --gold-foreground: 42 76% 15%;
+  --silver: 0 0% 70%;
+  --bronze: 25 55% 50%;
+  --professional-blue: 211 60% 60%;
+
+  --shadow-2xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.25);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 6px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 16px 32px rgba(0, 0, 0, 0.45);
+  --shadow-2xl: 0 24px 48px rgba(0, 0, 0, 0.5);
+
   --sidebar-primary-border: hsl(var(--sidebar-primary));
   --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --sidebar-accent-border: hsl(var(--sidebar-accent));
   --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --primary-border: hsl(var(--primary));
   --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --secondary-border: hsl(var(--secondary));
   --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --muted-border: hsl(var(--muted));
   --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --accent-border: hsl(var(--accent));
   --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --destructive-border: hsl(var(--destructive));
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
