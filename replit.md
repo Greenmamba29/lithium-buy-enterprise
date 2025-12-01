@@ -27,9 +27,13 @@ Preferred communication style: Simple, everyday language.
 - Custom glass-morphism effects (`glass-card`, `glass-card-3d`) for premium visual aesthetic
 
 **Design System:**
-- Enterprise-focused color palette with primary navy (#1B365D), professional blue (#4A90E2), and accent gold (#D4AF37)
-- Typography uses Inter for headings/UI and Source Sans Pro for body text
-- Dark/light theme support with CSS custom properties
+- Premium luxury aesthetic with deep obsidian backgrounds (#0A0E27) and gold accents (#D4AF37)
+- Glass morphism effects with backdrop blur, translucent panels, and 3D transforms
+- Custom glass utilities: `glass-panel`, `glass-card`, `glass-card-3d` for premium UI
+- Typography: Playfair Display (serif) for headings, Inter (sans) for body text
+- Dark/light theme support with CSS custom properties (dark mode default)
+- Gold gradient text effects with `gold-gradient-text` class
+- Luxury animations: fade-in, slide-up, float, pulse-glow
 - Verification tier color coding (Gold/Silver/Bronze) for trust indicators
 
 **State Management Pattern:**
@@ -100,12 +104,15 @@ Preferred communication style: Simple, everyday language.
    - UI components built for scheduling and DocuSign contract signing
    - Not yet connected to external APIs
 
-2. **AI Image Generation:**
-   - Google Generative AI (`@google/genai`) SDK installed
-   - AI Studio page includes image upload and prompt-based editing interface
-   - Gemini Flash Image model configured for visual transformations
-   - Service layer (`geminiService.ts`) handles file-to-base64 conversion and API calls
-   - Requires `GEMINI_API_KEY` environment variable
+2. **AI Image Generation (Lithium AI Studio):**
+   - Dedicated route at `/ai-studio` with premium glass morphism design
+   - Drag-and-drop image upload with preview and clear functionality
+   - Prompt-based AI editing interface with example prompts
+   - Feature cards: AI Enhancement, Background Removal, Style Transfer, Instant Results
+   - Google Generative AI (`@google/genai`) SDK installed for Gemini integration
+   - Loading state with animated spinner and "REFINING PIXELS..." message
+   - Download functionality for generated images
+   - Currently using mock implementation - requires `GEMINI_API_KEY` for production
 
 3. **Payment Processing:**
    - Stripe SDK installed but not implemented
