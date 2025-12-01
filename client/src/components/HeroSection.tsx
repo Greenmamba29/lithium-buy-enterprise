@@ -17,8 +17,9 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
           alt="Lithium crystal with prismatic light" 
           className="w-full h-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-stone-50 dark:to-black" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-stone-50 dark:to-black" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/10 to-black/40" />
+        <div className="absolute inset-0 bg-radial-gradient" style={{backgroundImage: 'radial-gradient(circle at center, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.5) 100%)'}} />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full py-32">
