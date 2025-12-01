@@ -23,24 +23,16 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full py-32">
         <div className="max-w-3xl mx-auto">
-          <h2 
-            className="text-gold tracking-[0.2em] text-sm font-bold uppercase mb-4 animate-fade-in"
-            data-testid="badge-trusted"
-          >
-            The Future of Energy
-          </h2>
-          
-          <h1 className="text-5xl md:text-7xl font-serif font-bold text-white mb-6 leading-tight animate-fade-in animation-delay-100">
-            Elemental Power.{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold to-stone-300">Refined.</span>
+          <h1 className="text-5xl md:text-7xl font-serif font-bold text-white mb-6 leading-tight animate-fade-in">
+            Discover Premium{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold to-stone-300">Lithium Sources</span>
           </h1>
           
-          <p className="text-xl text-stone-200 mb-10 max-w-xl mx-auto font-light leading-relaxed animate-fade-in animation-delay-200">
-            Discover the world's most exclusive lithium mining enterprises, 
-            technology innovators, and investment opportunities in one pristine directory.
+          <p className="text-xl text-stone-200 mb-10 max-w-xl mx-auto font-light leading-relaxed animate-fade-in animation-delay-100">
+            Connect with verified mining enterprises, technology innovators, and investment opportunities worldwide.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in animation-delay-300">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in animation-delay-200">
             <Button
               size="lg"
               className="h-14 px-8 font-semibold bg-gold text-white hover:bg-gold/90 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
