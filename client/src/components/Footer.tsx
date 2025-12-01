@@ -1,88 +1,57 @@
 import { Link } from 'wouter';
-import { Separator } from '@/components/ui/separator';
-import { Diamond, Shield, Lock, CreditCard, Globe, Sparkles } from 'lucide-react';
-import { SiLinkedin, SiX } from 'react-icons/si';
+import { Diamond } from 'lucide-react';
+import { SiLinkedin, SiX, SiGithub } from 'react-icons/si';
 
 const footerLinks = {
-  marketplace: [
-    { label: 'Directory', href: '/' },
-    { label: 'Compare', href: '/compare' },
-    { label: 'Telebuy', href: '/telebuy' },
-    { label: 'Request Quote', href: '/quote' },
+  directory: [
+    { label: 'Mining Companies', href: '/mining' },
+    { label: 'Refining Technology', href: '/refining' },
+    { label: 'Battery Manufacturers', href: '/battery' },
+    { label: 'Investment Firms', href: '/investment' },
   ],
   resources: [
-    { label: 'AI Studio', href: '/ai-studio' },
-    { label: 'Market Data', href: '/market' },
+    { label: 'Market Analysis', href: '/market' },
+    { label: 'Sustainability Reports', href: '/sustainability' },
+    { label: 'AI Studio Guide', href: '/ai-studio' },
     { label: 'API Access', href: '/api' },
-    { label: 'Reports', href: '/reports' },
   ],
-  company: [
-    { label: 'About', href: '/about' },
+  connect: [
+    { label: 'About Us', href: '/about' },
     { label: 'Careers', href: '/careers' },
     { label: 'Press', href: '/press' },
     { label: 'Contact', href: '/contact' },
   ],
-  legal: [
-    { label: 'Privacy', href: '/privacy' },
-    { label: 'Terms', href: '/terms' },
-    { label: 'Cookies', href: '/cookies' },
-    { label: 'Compliance', href: '/compliance' },
-  ],
 };
-
-const trustBadges = [
-  { icon: Shield, label: 'Verified Partners' },
-  { icon: Lock, label: 'Secure Transactions' },
-  { icon: CreditCard, label: 'Protected Payments' },
-  { icon: Globe, label: 'Global Network' },
-];
 
 export default function Footer() {
   return (
-    <footer className="relative overflow-hidden" data-testid="footer">
-      <div className="absolute inset-0 hero-gradient" />
-      
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 py-16">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
-          <div className="col-span-2 md:col-span-1">
+    <footer className="bg-stone-50 dark:bg-stone-950 border-t border-stone-200 dark:border-stone-800 pt-20 pb-10 transition-colors duration-500" data-testid="footer">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+          <div className="col-span-1">
             <Link href="/">
-              <div className="flex items-center gap-2.5 cursor-pointer group mb-6">
-                <Diamond className="h-6 w-6 text-gold transition-transform duration-500 group-hover:rotate-180" />
-                <span className="text-xl font-serif font-bold tracking-wider">
-                  <span className="text-foreground">LITHIUM</span>
-                  <span className="text-gold mx-1">&</span>
-                  <span className="text-foreground">LUX</span>
+              <div className="flex items-center space-x-2 mb-6 cursor-pointer group">
+                <Diamond className="h-5 w-5 text-gold" />
+                <span className="text-lg font-serif font-bold tracking-wider text-stone-900 dark:text-stone-100">
+                  LITHIUM <span className="text-gold">&</span> LUX
                 </span>
               </div>
             </Link>
-            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-              The world's most exclusive lithium marketplace for enterprise partners.
+            <p className="text-stone-500 dark:text-stone-400 text-sm leading-relaxed mb-6">
+              The premier digital destination for the lithium industry's most influential players. Connecting capital, technology, and resources.
             </p>
-            <div className="flex gap-3">
-              <a
-                href="#"
-                className="h-10 w-10 rounded-lg glass-card flex items-center justify-center hover:border-gold/30 transition-all"
-                data-testid="link-linkedin"
-              >
-                <SiLinkedin className="h-4 w-4" />
-              </a>
-              <a
-                href="#"
-                className="h-10 w-10 rounded-lg glass-card flex items-center justify-center hover:border-gold/30 transition-all"
-                data-testid="link-twitter"
-              >
-                <SiX className="h-4 w-4" />
-              </a>
+            <div className="text-sm text-stone-400 dark:text-stone-500">
+              <p>New York • London • Perth</p>
             </div>
           </div>
-
+          
           <div>
-            <h4 className="text-xs font-bold tracking-luxury uppercase text-gold mb-4">Directory</h4>
-            <ul className="space-y-3">
-              {footerLinks.marketplace.map((link) => (
+            <h4 className="text-stone-900 dark:text-stone-200 font-serif mb-6">Directory</h4>
+            <ul className="space-y-3 text-sm text-stone-500 dark:text-stone-400">
+              {footerLinks.directory.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href}>
-                    <span className="text-sm text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
+                    <span className="hover:text-gold cursor-pointer transition-colors">
                       {link.label}
                     </span>
                   </Link>
@@ -92,28 +61,12 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="text-xs font-bold tracking-luxury uppercase text-gold mb-4">Resources</h4>
-            <ul className="space-y-3">
+            <h4 className="text-stone-900 dark:text-stone-200 font-serif mb-6">Resources</h4>
+            <ul className="space-y-3 text-sm text-stone-500 dark:text-stone-400">
               {footerLinks.resources.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href}>
-                    <span className="text-sm text-muted-foreground hover:text-foreground cursor-pointer transition-colors flex items-center gap-1.5">
-                      {link.label}
-                      {link.label === 'AI Studio' && <Sparkles className="h-3 w-3 text-gold" />}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-xs font-bold tracking-luxury uppercase text-gold mb-4">Company</h4>
-            <ul className="space-y-3">
-              {footerLinks.company.map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href}>
-                    <span className="text-sm text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
+                    <span className="hover:text-gold cursor-pointer transition-colors">
                       {link.label}
                     </span>
                   </Link>
@@ -123,38 +76,42 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="text-xs font-bold tracking-luxury uppercase text-gold mb-4">Legal</h4>
-            <ul className="space-y-3">
-              {footerLinks.legal.map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href}>
-                    <span className="text-sm text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
-                      {link.label}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        <Separator className="bg-white/10 mb-8" />
-
-        <div className="flex flex-wrap justify-center gap-8 mb-8">
-          {trustBadges.map((badge) => (
-            <div
-              key={badge.label}
-              className="flex items-center gap-2 text-muted-foreground"
-            >
-              <badge.icon className="h-5 w-5 text-gold/70" />
-              <span className="text-sm">{badge.label}</span>
+            <h4 className="text-stone-900 dark:text-stone-200 font-serif mb-6">Connect</h4>
+            <div className="flex space-x-4 mb-6">
+              <a href="#" className="text-stone-400 hover:text-gold transition-colors" data-testid="link-twitter">
+                <SiX className="h-5 w-5" />
+              </a>
+              <a href="#" className="text-stone-400 hover:text-gold transition-colors" data-testid="link-linkedin">
+                <SiLinkedin className="h-5 w-5" />
+              </a>
+              <a href="#" className="text-stone-400 hover:text-gold transition-colors" data-testid="link-github">
+                <SiGithub className="h-5 w-5" />
+              </a>
             </div>
-          ))}
+            <ul className="space-y-3 text-sm text-stone-500 dark:text-stone-400">
+              {footerLinks.connect.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href}>
+                    <span className="hover:text-gold cursor-pointer transition-colors">
+                      {link.label}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
-        <div className="text-center text-sm text-muted-foreground">
+        <div className="border-t border-stone-200 dark:border-stone-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-stone-500 dark:text-stone-500">
           <p>&copy; {new Date().getFullYear()} Lithium & Lux. All rights reserved.</p>
-          <p className="mt-1 text-xs opacity-70">Enterprise lithium marketplace for verified global partners.</p>
+          <div className="flex space-x-6 mt-4 md:mt-0">
+            <Link href="/privacy">
+              <span className="hover:text-gold cursor-pointer transition-colors">Privacy Policy</span>
+            </Link>
+            <Link href="/terms">
+              <span className="hover:text-gold cursor-pointer transition-colors">Terms of Service</span>
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

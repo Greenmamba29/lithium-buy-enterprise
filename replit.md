@@ -27,11 +27,13 @@ Preferred communication style: Simple, everyday language.
 - Custom glass-morphism effects (`glass-card`, `glass-card-3d`) for premium visual aesthetic
 
 **Design System:**
-- Premium luxury aesthetic with deep obsidian backgrounds (#0A0E27) and gold accents (#D4AF37)
-- Glass morphism effects with backdrop blur, translucent panels, and 3D transforms
-- Custom glass utilities: `glass-panel`, `glass-card`, `glass-card-3d` for premium UI
+- Warm stone-based color palette with refined luxury aesthetic
+- Light mode: Stone-50 to stone-100 backgrounds with stone-900 text
+- Dark mode: Near-black (stone-950) backgrounds with stone-100 text
+- Gold accent color (#DDA826) for primary CTA and premium highlights
+- Hero section features lithium crystal background image with gradient overlays
 - Typography: Playfair Display (serif) for headings, Inter (sans) for body text
-- Dark/light theme support with CSS custom properties (dark mode default)
+- Dark/light theme support with CSS custom properties
 - Gold gradient text effects with `gold-gradient-text` class
 - Luxury animations: fade-in, slide-up, float, pulse-glow
 - Verification tier color coding (Gold/Silver/Bronze) for trust indicators
