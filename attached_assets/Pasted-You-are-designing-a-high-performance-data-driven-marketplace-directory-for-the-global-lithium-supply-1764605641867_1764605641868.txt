@@ -1,0 +1,43 @@
+You are designing a high-performance data-driven marketplace directory for the global lithium supply chain. 
+
+Context:
+- Target users: Procurement professionals, mining companies, materials traders, battery manufacturers seeking lithium products and suppliers
+- Business model: Commission-based marketplace with curated suppliers, pricing intelligence, and sourcing deal brokerage
+- Revenue: Middleman cuts on transactions and subscription tiers for premium supplier data
+
+Design Requirements:
+
+PAGE 1: Search & Discovery Interface
+- Hero section with prominent search bar ("Find Lithium Suppliers & Products")
+- Filter sidebar with multi-select options: Product Type (raw lithium, lithium compounds, processed ore), Purity Level (99%, 99.5%, 99.9%), Price Range, Location/Region, Supplier Verification Tier (Gold/Silver/Bronze badges)
+- Results grid showing: Supplier Logo, Company Name, Verification Badge, Price Per Unit, Average Rating, Quick View Button
+- Inline comparison checkbox for side-by-side supplier comparison
+- Pagination and sorting options (Price Low→High, Newest, Most Verified)
+
+PAGE 2: Supplier Profile Detail
+- Header: Company logo, name, verification status, overall rating (5-star), # of transactions, response time
+- Key sections: Product Specifications (detailed table format), Pricing Tiers (bulk discounts visible), Certifications/Compliance, Customer Reviews (recent reviews with dates)
+- Trust Indicators: Years in business, Verified badge explanation, Security certifications
+- CTA buttons: "Request Quote" (prominent), "Schedule Telebuy" (video call + DocuSign integration button)
+- "View Similar Suppliers" carousel at bottom
+
+PAGE 3: Telebuy Flow (Integration Layer)
+- Minimal interface for video call scheduler + document signing
+- Show: Meeting time selector, Embedded Zoom/Calendly picker, "Initiate DocuSign" button
+- Post-signature: Payment processing UI (show commission structure transparently: "Our fee: 3-5% of transaction")
+- Order summary before final confirmation
+
+Design Style:
+- Professional, trustworthy aesthetic (think LinkedIn + B2B SaaS)
+- Color palette: Deep blue (#003D82) for primary, Gold (#D4AF37) for premium/verified indicators, Clean whites and light grays
+- Typography: Clear hierarchy, sans-serif (Inter/Poppins style)
+- Micro-interactions: Hover effects on supplier cards, smooth filter transitions, loading states for data-heavy sections
+- Mobile-first responsive design that works seamlessly on tablets and desktops
+
+Data-Aware Features:
+- Make product cards responsive to sample supplier data (create mock dataset: 15-20 suppliers with varying product types, prices, ratings)
+- Filter logic that actually filters the grid based on selections
+- Comparison feature that creates a side-by-side table when 2+ suppliers selected
+- Conditional visibility: Show "Bulk Discount" badge only for suppliers with quantity tiers
+
+Make this production-ready with clean code structure, proper spacing using auto-layout, and interactive hover states throughout.
