@@ -66,26 +66,26 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
             technology innovators, and investment opportunities in one pristine directory.
           </p>
 
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 mb-8 max-w-2xl mx-auto animate-fade-in animation-delay-300">
-            <div className="relative flex-1">
+          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 mb-8 max-w-3xl mx-auto animate-fade-in animation-delay-300">
+            <div className="relative flex-[2]">
               <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
               <Input
                 type="search"
                 placeholder="Search by company, product, or specification..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-14 pl-12 pr-4 text-base glass-panel border-white/10 focus:border-gold/50 focus:ring-gold/20"
+                className="h-14 pl-12 pr-4 text-base glass-panel border-white/10 dark:border-white/10 border-black/10 focus:border-gold/50 focus:ring-gold/20"
                 data-testid="input-hero-search"
               />
             </div>
             <Button
               type="submit"
               size="lg"
-              className="h-14 px-8 font-bold tracking-wide-luxury uppercase bg-foreground text-background hover:bg-gold hover:text-foreground transition-all duration-300"
+              className="h-14 px-5 font-bold tracking-wide-luxury uppercase bg-foreground text-background hover:bg-gold hover:text-foreground transition-all duration-300 whitespace-nowrap"
               data-testid="button-hero-search"
             >
-              Explore Directory
-              <ArrowRight className="ml-2 h-4 w-4" />
+              Explore
+              <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
           </form>
 

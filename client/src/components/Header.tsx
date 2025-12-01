@@ -36,6 +36,12 @@ export default function Header({ theme, onThemeToggle }: HeaderProps) {
     { label: 'Telebuy', href: '/telebuy' },
   ];
 
+  const mobileOnlyLinks = [
+    { label: 'About', href: '/about' },
+    { label: 'Product', href: '/product' },
+    { label: 'Pricing', href: '/pricing' },
+  ];
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Search submitted:', searchQuery);
@@ -182,6 +188,22 @@ export default function Header({ theme, onThemeToggle }: HeaderProps) {
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                     data-testid={`mobile-nav-${link.label.toLowerCase().replace(' ', '-')}`}
+                  >
+                    {link.label}
+                  </button>
+                </Link>
+              ))}
+              <div className="border-t border-white/10 my-2" />
+              {mobileOnlyLinks.map((link) => (
+                <Link key={link.href} href={link.href}>
+                  <button
+                    className={`w-full text-left px-3 py-2.5 text-sm tracking-luxury uppercase transition-colors rounded ${
+                      location === link.href
+                        ? 'text-gold bg-gold/10'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    data-testid={`mobile-nav-${link.label.toLowerCase()}`}
                   >
                     {link.label}
                   </button>
