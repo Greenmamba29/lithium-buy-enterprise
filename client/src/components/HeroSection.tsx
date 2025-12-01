@@ -92,15 +92,14 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
               <span className="text-xs font-bold tracking-widest uppercase text-gold">Enterprise Marketplace</span>
             </div>
             
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white mb-6 leading-tight animate-fade-in animation-delay-100">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white mb-8 leading-tight animate-fade-in animation-delay-100">
               Acquire{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold via-amber-300 to-gold">Premium</span>
               <br />Lithium Assets
             </h1>
             
-            <p className="text-lg text-stone-300 mb-10 max-w-lg font-light leading-relaxed animate-fade-in animation-delay-200">
-              Connect with verified tier-1 suppliers for million-dollar lithium transactions. 
-              Enterprise-grade sourcing for the world's most demanding applications.
+            <p className="text-base sm:text-lg text-stone-200 mb-10 max-w-xl font-normal leading-relaxed animate-fade-in animation-delay-200">
+              Connect with verified tier-1 suppliers for million-dollar lithium transactions. Enterprise-grade sourcing for the world's most demanding applications.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in animation-delay-300">
@@ -125,20 +124,20 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
               </Link>
             </div>
 
-            <div className="mt-12 flex items-center gap-8 justify-center lg:justify-start animate-fade-in animation-delay-400">
+            <div className="mt-12 flex flex-wrap items-center gap-6 sm:gap-8 justify-center lg:justify-start animate-fade-in animation-delay-400">
               <div className="text-center">
-                <p className="text-3xl font-serif font-bold text-gold">$2.4B+</p>
-                <p className="text-xs text-stone-500 uppercase tracking-wider">Transaction Volume</p>
+                <p className="text-2xl sm:text-3xl font-serif font-bold text-gold">$2.4B+</p>
+                <p className="text-xs text-stone-400 uppercase tracking-wider mt-1">Transaction Volume</p>
               </div>
-              <div className="w-px h-12 bg-stone-700" />
+              <div className="hidden sm:block w-px h-12 bg-stone-700" />
               <div className="text-center">
-                <p className="text-3xl font-serif font-bold text-gold">147</p>
-                <p className="text-xs text-stone-500 uppercase tracking-wider">Verified Suppliers</p>
+                <p className="text-2xl sm:text-3xl font-serif font-bold text-gold">147</p>
+                <p className="text-xs text-stone-400 uppercase tracking-wider mt-1">Verified Suppliers</p>
               </div>
-              <div className="w-px h-12 bg-stone-700" />
+              <div className="hidden sm:block w-px h-12 bg-stone-700" />
               <div className="text-center">
-                <p className="text-3xl font-serif font-bold text-gold">99.9%</p>
-                <p className="text-xs text-stone-500 uppercase tracking-wider">Purity Grade</p>
+                <p className="text-2xl sm:text-3xl font-serif font-bold text-gold">99.9%</p>
+                <p className="text-xs text-stone-400 uppercase tracking-wider mt-1">Purity Grade</p>
               </div>
             </div>
           </div>
