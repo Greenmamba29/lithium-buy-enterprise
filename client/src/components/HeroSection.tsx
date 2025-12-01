@@ -83,7 +83,6 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
         <div className="absolute inset-0 bg-gradient-to-b from-stone-950/40 via-transparent to-stone-950" />
         <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/20 to-transparent" />
       </div>
-
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-32">
         <div className="grid lg:grid-cols-1 gap-16 items-center justify-center">
           <div className="text-center max-w-2xl mx-auto">
@@ -98,7 +97,7 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
               <br />Lithium Assets
             </h1>
             
-            <p className="text-base sm:text-lg text-stone-200 mb-10 max-w-xl font-normal leading-relaxed animate-fade-in animation-delay-200">
+            <p className="text-base sm:text-lg text-stone-200 mb-10 max-w-xl leading-relaxed animate-fade-in animation-delay-200 font-semibold">
               Connect with verified tier-1 suppliers for million-dollar lithium transactions. Enterprise-grade sourcing for the world's most demanding applications.
             </p>
 
@@ -157,7 +156,6 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
           </div>
         </div>
       </div>
-
       <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-stone-950 to-transparent pointer-events-none" />
     </section>
   );
