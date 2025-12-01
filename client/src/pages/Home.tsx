@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
   Select,
@@ -15,6 +16,7 @@ import SupplierCard from '@/components/SupplierCard';
 import CompareBar from '@/components/CompareBar';
 import QuickViewModal from '@/components/QuickViewModal';
 import ComparisonTable from '@/components/ComparisonTable';
+import { GlassCard, GlassCardContent, GlassCardHeader, GlassCardTitle } from '@/components/GlassCard';
 import { suppliers, type Supplier } from '@/data/suppliers';
 
 const defaultFilters: FilterState = {
@@ -125,29 +127,47 @@ export default function Home() {
     <div className="min-h-screen bg-background" data-testid="page-home">
       <HeroSection onSearch={handleSearch} />
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
+        <div className="text-center mb-12">
+          <Badge className="mb-4 px-4 py-1.5 text-xs font-bold tracking-luxury uppercase bg-gold/10 text-gold border-gold/30">
+            Exclusive Listings
+          </Badge>
+          <h2 className="text-3xl sm:text-4xl font-serif font-bold mb-4">Featured Partners</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Discover verified lithium suppliers from around the world
+          </p>
+        </div>
+
         <div className="flex gap-8">
-          <aside className="hidden lg:block w-80 flex-shrink-0">
-            <div className="sticky top-24">
-              <FilterSidebar
-                filters={filters}
-                onFilterChange={setFilters}
-                onClearAll={() => setFilters(defaultFilters)}
-              />
+          <aside className="hidden lg:block w-72 flex-shrink-0">
+            <div className="sticky top-28">
+              <GlassCard variant="elevated">
+                <GlassCardContent className="p-4">
+                  <FilterSidebar
+                    filters={filters}
+                    onFilterChange={setFilters}
+                    onClearAll={() => setFilters(defaultFilters)}
+                  />
+                </GlassCardContent>
+              </GlassCard>
             </div>
           </aside>
 
           <main className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+              <div className="flex items-center gap-3">
                 <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
                   <SheetTrigger asChild>
-                    <Button variant="outline" className="lg:hidden" data-testid="button-mobile-filters">
+                    <Button 
+                      variant="outline" 
+                      className="lg:hidden border-white/10 hover:border-gold/30" 
+                      data-testid="button-mobile-filters"
+                    >
                       <Filter className="h-4 w-4 mr-2" />
                       Filters
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="w-80 p-4">
+                  <SheetContent side="left" className="w-80 p-4 glass-panel border-white/10">
                     <FilterSidebar
                       filters={filters}
                       onFilterChange={(f) => {
@@ -159,17 +179,17 @@ export default function Home() {
                 </Sheet>
 
                 <p className="text-sm text-muted-foreground" data-testid="text-results-count">
-                  <strong>{filteredSuppliers.length}</strong> suppliers found
+                  <span className="font-serif font-bold text-foreground">{filteredSuppliers.length}</span> partners found
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-                  <SelectTrigger className="w-44" data-testid="select-sort">
-                    <ArrowUpDown className="h-4 w-4 mr-2" />
+                  <SelectTrigger className="w-48 bg-white/5 border-white/10" data-testid="select-sort">
+                    <ArrowUpDown className="h-4 w-4 mr-2 text-muted-foreground" />
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="glass-panel border-white/10">
                     <SelectItem value="rating">Highest Rated</SelectItem>
                     <SelectItem value="price-asc">Price: Low to High</SelectItem>
                     <SelectItem value="price-desc">Price: High to Low</SelectItem>
@@ -177,10 +197,11 @@ export default function Home() {
                   </SelectContent>
                 </Select>
 
-                <div className="hidden sm:flex border rounded-md">
+                <div className="hidden sm:flex glass-card rounded-lg overflow-hidden">
                   <Button
                     variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
                     size="icon"
+                    className={viewMode === 'grid' ? 'bg-gold/10 text-gold' : ''}
                     onClick={() => setViewMode('grid')}
                     data-testid="button-view-grid"
                   >
@@ -189,6 +210,7 @@ export default function Home() {
                   <Button
                     variant={viewMode === 'list' ? 'secondary' : 'ghost'}
                     size="icon"
+                    className={viewMode === 'list' ? 'bg-gold/10 text-gold' : ''}
                     onClick={() => setViewMode('list')}
                     data-testid="button-view-list"
                   >
@@ -206,25 +228,36 @@ export default function Home() {
                     : 'space-y-4'
                 }
               >
-                {filteredSuppliers.map((supplier) => (
-                  <SupplierCard
-                    key={supplier.id}
-                    supplier={supplier}
-                    isSelected={compareIds.includes(supplier.id)}
-                    onCompareToggle={handleCompareToggle}
-                    onQuickView={setQuickViewSupplier}
-                  />
+                {filteredSuppliers.map((supplier, index) => (
+                  <div 
+                    key={supplier.id} 
+                    className="animate-fade-in-up"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <SupplierCard
+                      supplier={supplier}
+                      isSelected={compareIds.includes(supplier.id)}
+                      onCompareToggle={handleCompareToggle}
+                      onQuickView={setQuickViewSupplier}
+                    />
+                  </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-16">
-                <p className="text-lg text-muted-foreground mb-4">
-                  No suppliers match your criteria
-                </p>
-                <Button variant="outline" onClick={() => setFilters(defaultFilters)}>
-                  Clear All Filters
-                </Button>
-              </div>
+              <GlassCard variant="elevated" className="text-center py-16">
+                <GlassCardContent>
+                  <p className="text-lg text-muted-foreground mb-4">
+                    No partners match your criteria
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setFilters(defaultFilters)}
+                    className="border-white/10 hover:border-gold/30"
+                  >
+                    Clear All Filters
+                  </Button>
+                </GlassCardContent>
+              </GlassCard>
             )}
           </main>
         </div>

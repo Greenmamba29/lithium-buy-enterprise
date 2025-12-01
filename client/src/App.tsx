@@ -10,6 +10,7 @@ import Home from '@/pages/Home';
 import SupplierDetail from '@/pages/SupplierDetail';
 import Telebuy from '@/pages/Telebuy';
 import Compare from '@/pages/Compare';
+import AIStudio from '@/pages/AIStudio';
 import NotFound from '@/pages/not-found';
 
 function Router() {
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/supplier/:id" component={SupplierDetail} />
       <Route path="/telebuy" component={Telebuy} />
       <Route path="/compare" component={Compare} />
+      <Route path="/ai-studio" component={AIStudio} />
       <Route path="/products" component={Home} />
       <Route component={NotFound} />
     </Switch>
@@ -30,9 +32,9 @@ function App() {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('theme');
       if (stored === 'dark' || stored === 'light') return stored;
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      return 'dark';
     }
-    return 'light';
+    return 'dark';
   });
 
   useEffect(() => {
