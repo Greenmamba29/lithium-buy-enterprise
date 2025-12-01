@@ -85,8 +85,8 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-32">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          <div className="text-center lg:text-left">
+        <div className="grid lg:grid-cols-1 gap-16 items-center justify-center">
+          <div className="text-center max-w-2xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 border border-gold/30 mb-6 animate-fade-in">
               <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
               <span className="text-xs font-bold tracking-widest uppercase text-gold">Enterprise Marketplace</span>
@@ -102,7 +102,7 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
               Connect with verified tier-1 suppliers for million-dollar lithium transactions. Enterprise-grade sourcing for the world's most demanding applications.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in animation-delay-300">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in animation-delay-300">
               <Button
                 size="lg"
                 className="h-14 px-10 font-semibold bg-gold text-stone-900 hover:bg-gold/90 shadow-lg shadow-gold/20 hover:shadow-xl hover:shadow-gold/30 hover:-translate-y-1 transition-all duration-500"
@@ -124,7 +124,7 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
               </Link>
             </div>
 
-            <div className="mt-12 flex flex-wrap items-center gap-6 sm:gap-8 justify-center lg:justify-start animate-fade-in animation-delay-400">
+            <div className="mt-12 flex flex-wrap items-center gap-6 sm:gap-8 justify-center animate-fade-in animation-delay-400">
               <div className="text-center">
                 <p className="text-2xl sm:text-3xl font-serif font-bold text-gold">$2.4B+</p>
                 <p className="text-xs text-stone-400 uppercase tracking-wider mt-1">Transaction Volume</p>
