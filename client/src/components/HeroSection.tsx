@@ -80,7 +80,7 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
           alt="Lithium element with premium applications" 
           className="w-full h-full object-cover object-center opacity-90"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-stone-950/40 via-transparent to-stone-950" />
+        <div className="absolute inset-0 bg-gradient-to-b from-stone-900/90 via-stone-950/50 to-stone-950" />
         <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/20 to-transparent" />
       </div>
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-32">
