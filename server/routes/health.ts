@@ -83,11 +83,13 @@ async function checkExternalAPIs(): Promise<{
   daily: { status: string; error?: string };
   perplexity: { status: string; error?: string };
   gemini: { status: string; error?: string };
+  docusign: { status: string; error?: string };
 }> {
   const results = {
     daily: { status: "not_configured" as string, error: undefined as string | undefined },
     perplexity: { status: "not_configured" as string, error: undefined as string | undefined },
     gemini: { status: "not_configured" as string, error: undefined as string | undefined },
+    docusign: { status: "not_configured" as string, error: undefined as string | undefined },
   };
 
   // Check Daily.co
@@ -119,6 +121,15 @@ async function checkExternalAPIs(): Promise<{
   // Check Gemini (just verify API key format)
   if (process.env.GEMINI_API_KEY) {
     results.gemini = { status: "configured" }; // API key present
+  }
+
+  // Check DocuSign (verify credentials are present)
+  if (
+    process.env.DOCUSIGN_CLIENT_ID &&
+    process.env.DOCUSIGN_CLIENT_SECRET &&
+    process.env.DOCUSIGN_ACCOUNT_ID
+  ) {
+    results.docusign = { status: "configured" }; // Credentials present
   }
 
   return results;

@@ -88,7 +88,8 @@ export async function getMeetingRoom(roomName: string): Promise<DailyRoom | null
     throw new InternalServerError("Daily.co API not configured");
   }
 
-  try {
+  return dailyCircuitBreaker.execute(async () => {
+    try {
     const response = await fetch(`https://api.daily.co/v1/rooms/${roomName}`, {
       method: "GET",
       headers: {
@@ -113,11 +114,15 @@ export async function getMeetingRoom(roomName: string): Promise<DailyRoom | null
       config: room.config,
       created_at: room.config.created_at,
     };
-  } catch (error) {
-    throw new InternalServerError(
-      `Failed to get meeting room: ${error instanceof Error ? error.message : "Unknown error"}`
-    );
-  }
+    } catch (error) {
+      if (error instanceof CircuitBreakerError) {
+        throw error;
+      }
+      throw new InternalServerError(
+        `Failed to get meeting room: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  });
 }
 
 /**
@@ -139,11 +144,15 @@ export async function deleteMeetingRoom(roomName: string): Promise<void> {
     if (!response.ok && response.status !== 404) {
       throw new Error(`Daily.co API error: ${response.statusText}`);
     }
-  } catch (error) {
-    throw new InternalServerError(
-      `Failed to delete meeting room: ${error instanceof Error ? error.message : "Unknown error"}`
-    );
-  }
+    } catch (error) {
+      if (error instanceof CircuitBreakerError) {
+        throw error;
+      }
+      throw new InternalServerError(
+        `Failed to delete meeting room: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  });
 }
 
 /**
@@ -158,7 +167,8 @@ export async function generateMeetingToken(
     throw new InternalServerError("Daily.co API not configured");
   }
 
-  try {
+  return dailyCircuitBreaker.execute(async () => {
+    try {
     const response = await fetch("https://api.daily.co/v1/meeting-tokens", {
       method: "POST",
       headers: {
@@ -181,11 +191,15 @@ export async function generateMeetingToken(
 
     const data = await response.json();
     return data.token;
-  } catch (error) {
-    throw new InternalServerError(
-      `Failed to generate meeting token: ${error instanceof Error ? error.message : "Unknown error"}`
-    );
-  }
+    } catch (error) {
+      if (error instanceof CircuitBreakerError) {
+        throw error;
+      }
+      throw new InternalServerError(
+        `Failed to generate meeting token: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  });
 }
 
 

@@ -43,6 +43,8 @@ const requiredEnvVars: EnvVar[] = [
   { name: "DOCUSIGN_CLIENT_SECRET", required: false, description: "DocuSign client secret" },
   { name: "DOCUSIGN_ACCOUNT_ID", required: false, description: "DocuSign account ID" },
   { name: "DOCUSIGN_REDIRECT_URI", required: false, description: "DocuSign OAuth redirect URI" },
+  { name: "DOCUSIGN_BASE_URL", required: false, description: "DocuSign base URL (default: https://demo.docusign.net)" },
+  { name: "DOCUSIGN_ACCESS_TOKEN", required: false, description: "DocuSign access token (for testing, use JWT in production)" },
 
   // Server
   { name: "PORT", required: false, description: "Server port (default: 5000)" },
@@ -85,7 +87,7 @@ export function validateEnvironment(): void {
 /**
  * Validate service-specific environment variables
  */
-export function validateServiceEnv(service: "daily" | "email" | "gemini" | "perplexity"): boolean {
+export function validateServiceEnv(service: "daily" | "email" | "gemini" | "perplexity" | "docusign"): boolean {
   switch (service) {
     case "daily":
       if (!process.env.DAILY_CO_API_KEY) {
@@ -111,6 +113,13 @@ export function validateServiceEnv(service: "daily" | "email" | "gemini" | "perp
     case "perplexity":
       if (!process.env.PERPLEXITY_API_KEY) {
         console.warn("Perplexity API key not set. Market intelligence features will not work.");
+        return false;
+      }
+      return true;
+
+    case "docusign":
+      if (!process.env.DOCUSIGN_CLIENT_ID || !process.env.DOCUSIGN_CLIENT_SECRET || !process.env.DOCUSIGN_ACCOUNT_ID) {
+        console.warn("DocuSign credentials not set. E-signature features will not work.");
         return false;
       }
       return true;
