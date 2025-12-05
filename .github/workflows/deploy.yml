@@ -1,0 +1,64 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to staging
+        run: |
+          echo "Deploy to staging environment"
+          # Add actual deployment commands here
+          # e.g., Railway CLI, Vercel CLI, etc.
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: deploy-staging
+    environment:
+      name: production
+      url: https://lithiumbuy.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to production
+        run: |
+          echo "Deploy to production environment"
+          # Add actual deployment commands here
+          # Requires manual approval in GitHub
+
+
+

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -77,7 +77,27 @@ export default function AIStudio() {
     }
   };
 
+  // Cleanup blob URLs to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      if (generatedImage && generatedImage.startsWith('blob:')) {
+        URL.revokeObjectURL(generatedImage);
+      }
+    };
+  }, [previewUrl, generatedImage]);
+
   const clearSelection = () => {
+    // Revoke existing blob URLs before clearing
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    if (generatedImage && generatedImage.startsWith('blob:')) {
+      URL.revokeObjectURL(generatedImage);
+    }
+    
     setSelectedFile(null);
     setPreviewUrl(null);
     setGeneratedImage(null);

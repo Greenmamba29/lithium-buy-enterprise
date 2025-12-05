@@ -85,9 +85,10 @@ LithiumBuy Enterprise is a B2B marketplace directory for the global lithium supp
 - TypeScript - Type-safe server code
 
 **Database:**
-- Drizzle ORM 0.39 - Type-safe query builder
-- PostgreSQL (prepared, not connected)
-- Neon Serverless adapter - Serverless PostgreSQL
+- Supabase (PostgreSQL 17.4.1) - Production database
+- Supabase client libraries for type-safe queries
+- Row Level Security (RLS) enabled on all LithiumBuy tables
+- Drizzle ORM 0.39 - Type-safe query builder (legacy, migrating to Supabase)
 - Zod 3.24 - Runtime validation
 
 **Storage:**
@@ -99,13 +100,15 @@ LithiumBuy Enterprise is a B2B marketplace directory for the global lithium supp
 - Vite - Client bundling
 - Custom build script - Orchestrates both builds
 
-### External Services (Prepared but Not Connected)
+### External Services
 
-- Google Gemini 2.5 Flash - AI image generation
-- Stripe - Payment processing
-- Zoom/Calendly - Video conferencing
-- DocuSign - Contract signing
-- Nodemailer - Email notifications
+- **Supabase** - Database, Authentication, and Realtime (CONNECTED)
+- **Accio** - Supplier data sourced manually from Accio reports (no API available)
+- Google Gemini 2.5 Flash - AI image generation (prepared, requires API key)
+- Stripe - Payment processing (prepared, not connected)
+- Zoom/Calendly - Video conferencing (prepared, not connected)
+- DocuSign - Contract signing (prepared, not connected)
+- Nodemailer - Email notifications (prepared, not configured)
 
 ## System Components
 
@@ -275,6 +278,26 @@ interface IStorage {
 - No route changes needed
 
 ### Database Schema
+
+**Supabase Database (Production):**
+- Project ID: `vuekwckknfjivjighhfd`
+- PostgreSQL 17.4.1
+- All LithiumBuy tables deployed with RLS policies
+- Schema migrations applied: `001_initial_schema.sql`, `002_indexes.sql`, `003_rls_policies.sql`
+- TypeScript types generated in `shared/supabase-schema.ts`
+
+**LithiumBuy Tables:**
+1. `suppliers` - Core supplier information
+2. `supplier_profiles` - Extended supplier details
+3. `locations` - Supplier locations with geolocation support
+4. `products` - Product catalog with pricing
+5. `certifications` - Supplier certifications
+6. `reviews` - Customer reviews
+7. `quotes` - Quote requests and responses
+8. `orders` - Order management
+9. `telebuy_sessions` - Video call sessions
+10. `telebuy_documents` - Documents from telebuy sessions
+11. `user_profiles` - Extended user information (extends auth.users)
 
 **Current Schema (`shared/schema.ts`):**
 

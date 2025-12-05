@@ -12,9 +12,23 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  // Get auth token if available
+  let headers: HeadersInit = data ? { "Content-Type": "application/json" } : {};
+  
+  // Try to get auth token (will be null if not logged in)
+  try {
+    const { getAuthToken } = await import("@/hooks/useAuth");
+    const token = await getAuthToken();
+    if (token) {
+      headers = { ...headers, Authorization: `Bearer ${token}` };
+    }
+  } catch {
+    // Ignore if auth not available
+  }
+
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -28,9 +42,10 @@ export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
-  async ({ queryKey }) => {
+  async ({ queryKey, signal }) => {
     const res = await fetch(queryKey.join("/") as string, {
       credentials: "include",
+      signal, // AbortController signal for request cancellation
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
@@ -49,6 +64,8 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       staleTime: Infinity,
       retry: false,
+      // Cancel queries when component unmounts
+      gcTime: 5 * 60 * 1000, // 5 minutes (formerly cacheTime)
     },
     mutations: {
       retry: false,

@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Filter, Grid3X3, List, ArrowUpDown } from 'lucide-react';
+import { Filter, Grid3X3, List, ArrowUpDown, Loader2 } from 'lucide-react';
 import HeroSection from '@/components/HeroSection';
 import FilterSidebar, { type FilterState } from '@/components/FilterSidebar';
 import SupplierCard from '@/components/SupplierCard';
@@ -17,7 +17,7 @@ import CompareBar from '@/components/CompareBar';
 import QuickViewModal from '@/components/QuickViewModal';
 import ComparisonTable from '@/components/ComparisonTable';
 import { GlassCard, GlassCardContent, GlassCardHeader, GlassCardTitle } from '@/components/GlassCard';
-import { suppliers, type Supplier } from '@/data/suppliers';
+import { useSuppliers, type Supplier } from '@/hooks/useSuppliers';
 
 const defaultFilters: FilterState = {
   productTypes: [],
@@ -40,71 +40,32 @@ export default function Home() {
   const [quickViewSupplier, setQuickViewSupplier] = useState<Supplier | null>(null);
   const [showComparison, setShowComparison] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [page, setPage] = useState(1);
 
-  const filteredSuppliers = useMemo(() => {
-    let result = [...suppliers];
+  // Convert FilterState to API filter format
+  const apiFilters = useMemo(() => ({
+    productType: filters.productTypes[0] as 'raw' | 'compound' | 'processed' | undefined,
+    purityLevel: filters.purityLevels[0] as '99' | '99.5' | '99.9' | undefined,
+    verificationTier: filters.verificationTiers[0] as 'gold' | 'silver' | 'bronze' | undefined,
+    location: filters.locations[0],
+    minPrice: filters.priceRange[0],
+    maxPrice: filters.priceRange[1],
+    search: searchQuery || undefined,
+    sortBy,
+    page,
+    limit: 20,
+  }), [filters, searchQuery, sortBy, page]);
 
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (s) =>
-          s.name.toLowerCase().includes(query) ||
-          s.country.toLowerCase().includes(query) ||
-          s.productType.toLowerCase().includes(query)
-      );
-    }
+  // Fetch suppliers from API
+  const { data: suppliersData, isLoading, error } = useSuppliers(apiFilters);
 
-    if (filters.productTypes.length > 0) {
-      result = result.filter((s) => filters.productTypes.includes(s.productType));
-    }
+  const filteredSuppliers = suppliersData?.data || [];
+  const totalSuppliers = suppliersData?.pagination.total || 0;
 
-    if (filters.purityLevels.length > 0) {
-      result = result.filter((s) => filters.purityLevels.includes(s.purityLevel));
-    }
-
-    if (filters.verificationTiers.length > 0) {
-      result = result.filter((s) => filters.verificationTiers.includes(s.verificationTier));
-    }
-
-    if (filters.locations.length > 0) {
-      result = result.filter((s) => filters.locations.includes(s.country));
-    }
-
-    result = result.filter(
-      (s) =>
-        s.pricePerUnit >= filters.priceRange[0] &&
-        s.pricePerUnit <= filters.priceRange[1]
-    );
-
-    if (filters.inStockOnly) {
-      result = result.filter((s) => s.availability === 'in-stock');
-    }
-
-    if (filters.bulkDiscountOnly) {
-      result = result.filter((s) => s.hasBulkDiscount);
-    }
-
-    switch (sortBy) {
-      case 'price-asc':
-        result.sort((a, b) => a.pricePerUnit - b.pricePerUnit);
-        break;
-      case 'price-desc':
-        result.sort((a, b) => b.pricePerUnit - a.pricePerUnit);
-        break;
-      case 'rating':
-        result.sort((a, b) => b.rating - a.rating);
-        break;
-      case 'newest':
-        result.sort((a, b) => b.yearsInBusiness - a.yearsInBusiness);
-        break;
-    }
-
-    return result;
-  }, [filters, sortBy, searchQuery]);
-
+  // Get compare suppliers from fetched data
   const compareSuppliers = useMemo(
-    () => suppliers.filter((s) => compareIds.includes(s.id)),
-    [compareIds]
+    () => filteredSuppliers.filter((s) => compareIds.includes(s.id)),
+    [filteredSuppliers, compareIds]
   );
 
   const handleCompareToggle = (id: string) => {
@@ -179,7 +140,16 @@ export default function Home() {
                 </Sheet>
 
                 <p className="text-sm text-muted-foreground" data-testid="text-results-count">
-                  <span className="font-serif font-bold text-foreground">{filteredSuppliers.length}</span> partners found
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Loading...
+                    </span>
+                  ) : (
+                    <>
+                      <span className="font-serif font-bold text-foreground">{totalSuppliers}</span> partners found
+                    </>
+                  )}
                 </p>
               </div>
 
@@ -220,29 +190,64 @@ export default function Home() {
               </div>
             </div>
 
-            {filteredSuppliers.length > 0 ? (
-              <div
-                className={
-                  viewMode === 'grid'
-                    ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
-                    : 'space-y-4'
-                }
-              >
-                {filteredSuppliers.map((supplier, index) => (
-                  <div 
-                    key={supplier.id} 
-                    className="animate-fade-in-up"
-                    style={{ animationDelay: `${index * 50}ms` }}
+            {isLoading ? (
+              <GlassCard variant="elevated" className="text-center py-16">
+                <GlassCardContent>
+                  <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-gold" />
+                  <p className="text-lg text-muted-foreground">Loading suppliers...</p>
+                </GlassCardContent>
+              </GlassCard>
+            ) : error ? (
+              <GlassCard variant="elevated" className="text-center py-16">
+                <GlassCardContent>
+                  <p className="text-lg text-destructive mb-4">
+                    Failed to load suppliers. Please try again.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => window.location.reload()}
+                    className="border-white/10 hover:border-gold/30"
                   >
-                    <SupplierCard
-                      supplier={supplier}
-                      isSelected={compareIds.includes(supplier.id)}
-                      onCompareToggle={handleCompareToggle}
-                      onQuickView={setQuickViewSupplier}
-                    />
+                    Retry
+                  </Button>
+                </GlassCardContent>
+              </GlassCard>
+            ) : filteredSuppliers.length > 0 ? (
+              <>
+                <div
+                  className={
+                    viewMode === 'grid'
+                      ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
+                      : 'space-y-4'
+                  }
+                >
+                  {filteredSuppliers.map((supplier, index) => (
+                    <div 
+                      key={supplier.id} 
+                      className="animate-fade-in-up"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <SupplierCard
+                        supplier={supplier as any}
+                        isSelected={compareIds.includes(supplier.id)}
+                        onCompareToggle={handleCompareToggle}
+                        onQuickView={setQuickViewSupplier}
+                      />
+                    </div>
+                  ))}
+                </div>
+                {suppliersData && suppliersData.pagination.totalPages > page && (
+                  <div className="mt-8 text-center">
+                    <Button
+                      variant="outline"
+                      onClick={() => setPage(p => p + 1)}
+                      className="border-white/10 hover:border-gold/30"
+                    >
+                      Load More
+                    </Button>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             ) : (
               <GlassCard variant="elevated" className="text-center py-16">
                 <GlassCardContent>
@@ -251,7 +256,11 @@ export default function Home() {
                   </p>
                   <Button 
                     variant="outline" 
-                    onClick={() => setFilters(defaultFilters)}
+                    onClick={() => {
+                      setFilters(defaultFilters);
+                      setSearchQuery('');
+                      setPage(1);
+                    }}
                     className="border-white/10 hover:border-gold/30"
                   >
                     Clear All Filters

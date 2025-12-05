@@ -2,6 +2,10 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import { setupSecurity } from "./middleware/security.js";
+import { setupRateLimiting } from "./middleware/rateLimit.js";
+import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
+import { requestLogger } from "./middleware/logging.js";
 
 const app = express();
 const httpServer = createServer(app);
@@ -12,15 +16,26 @@ declare module "http" {
   }
 }
 
+// Security middleware (must be first)
+setupSecurity(app);
+
+// Request logging (before other middleware to capture all requests)
+app.use(requestLogger);
+
+// Body parsing with size limits
 app.use(
   express.json({
+    limit: "10mb",
     verify: (req, _res, buf) => {
       req.rawBody = buf;
     },
   }),
 );
 
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false, limit: "10mb" }));
+
+// Rate limiting
+setupRateLimiting(app);
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -62,13 +77,11 @@ app.use((req, res, next) => {
 (async () => {
   await registerRoutes(httpServer, app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+  // 404 handler for undefined routes (must be before error handler)
+  app.use(notFoundHandler);
 
-    res.status(status).json({ message });
-    throw err;
-  });
+  // Error handler (must be last)
+  app.use(errorHandler);
 
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
