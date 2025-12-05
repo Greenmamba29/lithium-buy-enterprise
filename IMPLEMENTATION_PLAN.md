@@ -42,7 +42,6 @@ Many services have placeholder implementations that need real API integration:
 - `server/db/client.ts` - Validate Supabase env vars
 - `server/services/videoService.ts` - Validate Daily.co env vars
 - `server/services/emailService.ts` - Validate SMTP env vars
-- `server/services/accioService.ts` - Validate Accio env vars
 - `server/services/geminiService.ts` - Validate Gemini env vars
 
 **Action:** Add startup validation that throws errors if required env vars are missing.

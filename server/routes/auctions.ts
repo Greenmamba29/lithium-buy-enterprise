@@ -1,6 +1,8 @@
 import { type Express, type Request, type Response } from "express";
 import { asyncHandler } from "../middleware/errorHandler.js";
 import { requireAuth } from "../middleware/auth.js";
+import { AuthorizationError, NotFoundError } from "../utils/errors.js";
+import { supabaseAdmin } from "../db/client.js";
 import {
   createAuction,
   placeBid,
@@ -141,24 +143,69 @@ export const placeBidRoute = asyncHandler(async (req: Request, res: Response) =>
  */
 export const endAuctionRoute = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const auction = await endAuction(id);
-  res.json({ data: auction });
+  const user_id = (req as any).user?.id;
+  const user_role = (req as any).user?.role;
+
+  if (!user_id) {
+    throw new Error("Authentication required");
+  }
+
+  // Get auction to verify ownership
+  const { data: auction, error } = await supabaseAdmin
+    .from("auctions")
+    .select("seller_id")
+    .eq("id", id)
+    .single();
+
+  if (error || !auction) {
+    throw new NotFoundError("Auction");
+  }
+
+  // Verify user is seller or admin
+  if (auction.seller_id !== user_id && user_role !== "admin") {
+    throw new AuthorizationError("Only the auction seller or an admin can end this auction");
+  }
+
+  const endedAuction = await endAuction(id);
+  res.json({ data: endedAuction });
 });
 
 /**
  * POST /api/auctions/:id/status
- * Update auction status
+ * Update auction status (admin or seller only)
  */
 export const updateStatus = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { status } = req.body;
+  const user_id = (req as any).user?.id;
+  const user_role = (req as any).user?.role;
+
+  if (!user_id) {
+    throw new Error("Authentication required");
+  }
 
   if (!["draft", "scheduled", "live", "ended", "cancelled"].includes(status)) {
     throw new Error("Invalid status");
   }
 
-  const auction = await updateAuctionStatus(id, status);
-  res.json({ data: auction });
+  // Get auction to verify ownership
+  const { data: auction, error } = await supabaseAdmin
+    .from("auctions")
+    .select("seller_id")
+    .eq("id", id)
+    .single();
+
+  if (error || !auction) {
+    throw new NotFoundError("Auction");
+  }
+
+  // Verify user is seller or admin
+  if (auction.seller_id !== user_id && user_role !== "admin") {
+    throw new AuthorizationError("Only the auction seller or an admin can update this auction's status");
+  }
+
+  const updatedAuction = await updateAuctionStatus(id, status);
+  res.json({ data: updatedAuction });
 });
 
 /**
