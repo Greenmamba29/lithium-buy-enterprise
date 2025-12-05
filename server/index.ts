@@ -6,6 +6,8 @@ import { setupSecurity } from "./middleware/security.js";
 import { setupRateLimiting } from "./middleware/rateLimit.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import { requestLogger } from "./middleware/logging.js";
+import { websocketManager } from "./services/websocketService.js";
+import { validateEnvironment } from "./utils/envValidation.js";
 
 const app = express();
 const httpServer = createServer(app);
@@ -75,6 +77,15 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Validate environment variables at startup
+  try {
+    validateEnvironment();
+    log("Environment variables validated");
+  } catch (error) {
+    console.error("Environment validation failed:", error);
+    process.exit(1);
+  }
+
   // Initialize WebSocket server
   websocketManager.initialize(httpServer);
 

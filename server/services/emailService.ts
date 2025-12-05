@@ -1,9 +1,9 @@
 import nodemailer from "nodemailer";
 import { InternalServerError } from "../utils/errors.js";
+import { validateServiceEnv } from "../utils/envValidation.js";
 
-if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-  console.warn("Email service not configured. SMTP credentials missing.");
-}
+// Validate email service configuration
+const isEmailConfigured = validateServiceEnv("email");
 
 // Create transporter
 const transporter =
@@ -28,6 +28,9 @@ export async function sendEmail(options: {
   html: string;
   text?: string;
 }): Promise<void> {
+  if (!isEmailConfigured) {
+    throw new InternalServerError("Email service not configured. SMTP credentials required.");
+  }
   if (!transporter) {
     throw new InternalServerError("Email service not configured");
   }

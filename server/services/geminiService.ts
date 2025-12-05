@@ -1,9 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { InternalServerError } from "../utils/errors.js";
+import { validateServiceEnv } from "../utils/envValidation.js";
 
-if (!process.env.GEMINI_API_KEY) {
-  console.warn("GEMINI_API_KEY not set. AI Studio features will not work.");
-}
+// Validate Gemini service configuration
+const isGeminiConfigured = validateServiceEnv("gemini");
 
 const genAI = process.env.GEMINI_API_KEY
   ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
@@ -16,8 +16,8 @@ export async function enhanceImage(
   imageData: Buffer | string,
   prompt: string
 ): Promise<string> {
-  if (!genAI) {
-    throw new InternalServerError("Gemini API not configured");
+  if (!isGeminiConfigured || !genAI) {
+    throw new InternalServerError("Gemini API not configured. GEMINI_API_KEY required.");
   }
 
   try {
