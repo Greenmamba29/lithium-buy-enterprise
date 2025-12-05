@@ -17,6 +17,9 @@ const Compare = lazy(() => import('@/pages/Compare'));
 const AIStudio = lazy(() => import('@/pages/AIStudio'));
 const Auctions = lazy(() => import('@/pages/Auctions'));
 const AuctionDetail = lazy(() => import('@/pages/AuctionDetail'));
+const RFQ = lazy(() => import('@/pages/RFQ'));
+const RFQDetail = lazy(() => import('@/pages/RFQDetail'));
+const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
 const Login = lazy(() => import('@/pages/Login'));
 const Signup = lazy(() => import('@/pages/Signup'));
 const NotFound = lazy(() => import('@/pages/not-found'));
@@ -41,6 +44,9 @@ function Router() {
         <Route path="/ai-studio" component={AIStudio} />
         <Route path="/auctions" component={Auctions} />
         <Route path="/auctions/:id" component={AuctionDetail} />
+        <Route path="/rfq" component={RFQ} />
+        <Route path="/rfq/:id" component={RFQDetail} />
+        <Route path="/admin/dashboard" component={AdminDashboard} />
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
         <Route component={NotFound} />

@@ -75,6 +75,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Initialize WebSocket server
+  websocketManager.initialize(httpServer);
+
   await registerRoutes(httpServer, app);
 
   // 404 handler for undefined routes (must be before error handler)

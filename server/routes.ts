@@ -10,6 +10,8 @@ import { registerAdminRoutes } from "./routes/admin.js";
 import { registerTelebuyRoutes } from "./routes/telebuy.js";
 import { registerPerplexityRoutes } from "./routes/perplexity.js";
 import { registerAuctionRoutes } from "./routes/auctions.js";
+import { registerRFQRoutes } from "./routes/rfq.js";
+import { registerContentRoutes } from "./routes/content.js";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -28,6 +30,8 @@ export async function registerRoutes(
   registerTelebuyRoutes(app);
   registerPerplexityRoutes(app);
   registerAuctionRoutes(app);
+  registerRFQRoutes(app);
+  registerContentRoutes(app);
 
   return httpServer;
 }
