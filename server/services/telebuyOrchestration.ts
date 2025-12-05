@@ -1,6 +1,7 @@
 import { createMeetingRoom } from "./videoService.js";
 import { createContractDocument } from "./contractService.js";
 import { sendEmail } from "./emailService.js";
+import { sendCalendarInvite } from "./calendarService.js";
 import { supabaseAdmin } from "../db/client.js";
 import { logger } from "../utils/logger.js";
 
@@ -101,11 +102,50 @@ export async function orchestrateTelebuyFlow(
     }
   }
 
-  // 5. Send calendar invites (placeholder - would integrate with calendar API)
-  logger.info(
-    { source: "telebuy", sessionId: session.id },
-    "Calendar invites would be sent here"
-  );
+  // 5. Send calendar invites
+  const scheduledDate = new Date(data.scheduled_at);
+  const endDate = new Date(scheduledDate.getTime() + 60 * 60 * 1000); // 1 hour duration
+
+  const calendarEvent = {
+    title: `TELEBUY Session: ${supplier.name}`,
+    description: `Video call session with ${supplier.name} via LithiumBuy TELEBUY.\n\nMeeting URL: ${meetingRoom.url}`,
+    startTime: scheduledDate.toISOString(),
+    endTime: endDate.toISOString(),
+    location: meetingRoom.url,
+    attendees: [
+      {
+        email: user.user?.email || "",
+        name: user.user?.email || "Buyer",
+      },
+      {
+        email: supplierEmail || "",
+        name: supplier.name,
+      },
+    ],
+  };
+
+  try {
+    // Send calendar invite to buyer
+    if (user.user?.email) {
+      await sendCalendarInvite(user.user.email, calendarEvent);
+    }
+
+    // Send calendar invite to supplier
+    if (supplierEmail) {
+      await sendCalendarInvite(supplierEmail, calendarEvent);
+    }
+
+    logger.info(
+      { source: "telebuy", sessionId: session.id },
+      "Calendar invites sent to participants"
+    );
+  } catch (error) {
+    logger.error(
+      { source: "telebuy", error: error instanceof Error ? error.message : "Unknown" },
+      "Failed to send calendar invites"
+    );
+    // Don't fail the entire flow if calendar invite fails
+  }
 
   // 6. Send notification emails
   const supplierEmail = (supplier as any).supplier_profiles?.[0]?.contact_email;

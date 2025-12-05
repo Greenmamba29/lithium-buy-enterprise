@@ -4,6 +4,8 @@ import { asyncHandler } from "../middleware/errorHandler.js";
 import { requireAuth } from "../middleware/auth.js";
 import { NotFoundError, ValidationError } from "../utils/errors.js";
 import { createMeetingRoom, generateMeetingToken } from "../services/videoService.js";
+import { runPostCallAutomation } from "../jobs/postCallAutomation.js";
+import { logger } from "../utils/logger.js";
 import { z } from "zod";
 
 const createTelebuySessionSchema = z.object({
@@ -220,6 +222,27 @@ export const endTelebuySession = asyncHandler(async (req: Request, res: Response
 
   if (updateError) {
     throw new ValidationError(`Failed to end session: ${updateError.message}`);
+  }
+
+  // Trigger post-call automation asynchronously
+  try {
+    // Enqueue post-call automation job
+    const { telebuyQueue } = await import("../jobs/queue.js");
+    await telebuyQueue.add("post-call-automation", {
+      sessionId: id,
+    });
+
+    logger.info({ source: "telebuy", sessionId: id }, "Post-call automation job enqueued");
+  } catch (error) {
+    logger.error(
+      {
+        source: "telebuy",
+        sessionId: id,
+        error: error instanceof Error ? error.message : "Unknown",
+      },
+      "Failed to enqueue post-call automation"
+    );
+    // Don't fail the request if automation enqueue fails
   }
 
   res.json({ data: updatedSession });

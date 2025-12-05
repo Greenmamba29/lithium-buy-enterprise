@@ -73,12 +73,33 @@ export async function sendCalendarInvite(
   event: CalendarEvent
 ): Promise<void> {
   const icsContent = await createCalendarEvent(event);
+  const { sendEmail } = await import("./emailService.js");
 
-  // This would be integrated with email service
-  // The .ics file would be attached to the email
+  // Send email with .ics attachment
+  // Note: In production, you'd attach the .ics file properly
+  // For now, we'll include it in the email body and provide download link
+  const htmlContent = `
+    <h2>${event.title}</h2>
+    <p><strong>Date:</strong> ${new Date(event.startTime).toLocaleString()}</p>
+    <p><strong>Duration:</strong> ${Math.round((new Date(event.endTime).getTime() - new Date(event.startTime).getTime()) / 60000)} minutes</p>
+    ${event.location ? `<p><strong>Location:</strong> <a href="${event.location}">${event.location}</a></p>` : ""}
+    <p>${event.description}</p>
+    <p>
+      <a href="data:text/calendar;charset=utf-8,${encodeURIComponent(icsContent)}" download="telebuy-invite.ics">
+        Add to Calendar (.ics file)
+      </a>
+    </p>
+  `;
+
+  await sendEmail({
+    to: attendeeEmail,
+    subject: `Calendar Invite: ${event.title}`,
+    html: htmlContent,
+  });
+
   logger.info(
-    { source: "calendar", attendee: attendeeEmail },
-    "Calendar invite would be sent via email"
+    { source: "calendar", attendee: attendeeEmail, eventTitle: event.title },
+    "Calendar invite sent via email"
   );
 }
 

@@ -52,12 +52,14 @@ SMTP_FROM=noreply@lithiumbuy.com
 DAILY_CO_API_KEY=your_daily_co_api_key
 ```
 
-### DocuSign
+### DocuSign - E-Signature Integration
 ```env
 DOCUSIGN_CLIENT_ID=your_client_id
 DOCUSIGN_CLIENT_SECRET=your_client_secret
 DOCUSIGN_ACCOUNT_ID=your_account_id
-DOCUSIGN_BASE_PATH=https://demo.docusign.net  # or https://www.docusign.net for production
+DOCUSIGN_BASE_URL=https://demo.docusign.net  # or https://www.docusign.net for production
+DOCUSIGN_REDIRECT_URI=https://your-domain.com/auth/docusign/callback  # For OAuth flow
+DOCUSIGN_ACCESS_TOKEN=your_access_token  # Optional: for testing (use JWT in production)
 ```
 
 ### Server Configuration
