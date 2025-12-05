@@ -54,9 +54,9 @@ export const emailWorker = new Worker(
   "emails",
   async (job) => {
     logger.info({ source: "queue", jobId: job.id, jobName: job.name }, "Processing email job");
-    // Email sending logic would go here
-    const { sendEmail } = await import("../services/emailService.js");
-    await sendEmail(job.data);
+    // Use sendEmailSync to actually send the email (not enqueue another job)
+    const { sendEmailSync } = await import("../services/emailService.js");
+    await sendEmailSync(job.data);
   },
   {
     connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN

@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { InternalServerError } from "../utils/errors.js";
 import { validateServiceEnv } from "../utils/envValidation.js";
+import { geminiCircuitBreaker, CircuitBreakerError } from "../utils/circuitBreaker.js";
 
 // Validate Gemini service configuration
 const isGeminiConfigured = validateServiceEnv("gemini");
@@ -20,8 +21,9 @@ export async function enhanceImage(
     throw new InternalServerError("Gemini API not configured. GEMINI_API_KEY required.");
   }
 
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+  return geminiCircuitBreaker.execute(async () => {
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
     // Convert image to base64 if it's a buffer
     const imageBase64 =
@@ -58,12 +60,13 @@ export async function enhanceImage(
  * Generate image description
  */
 export async function describeImage(imageData: Buffer | string): Promise<string> {
-  if (!genAI) {
-    throw new InternalServerError("Gemini API not configured");
+  if (!isGeminiConfigured || !genAI) {
+    throw new InternalServerError("Gemini API not configured. GEMINI_API_KEY required.");
   }
 
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+  return geminiCircuitBreaker.execute(async () => {
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
     const imageBase64 =
       typeof imageData === "string"
@@ -84,11 +87,15 @@ export async function describeImage(imageData: Buffer | string): Promise<string>
 
     const response = await result.response;
     return response.text();
-  } catch (error) {
-    throw new InternalServerError(
-      `Failed to describe image: ${error instanceof Error ? error.message : "Unknown error"}`
-    );
-  }
+    } catch (error) {
+      if (error instanceof CircuitBreakerError) {
+        throw error;
+      }
+      throw new InternalServerError(
+        `Failed to describe image: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  });
 }
 
 

@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "../db/client.js";
 import { logger } from "../utils/logger.js";
 import { ValidationError } from "../utils/errors.js";
+import { perplexityCircuitBreaker, CircuitBreakerError } from "../utils/circuitBreaker.js";
 
 /**
  * Perplexity Labs API Service
@@ -71,10 +72,11 @@ export async function fetchLithiumPrices(
 ): Promise<PerplexityPriceData[]> {
   const { apiKey, model, baseUrl } = getPerplexityConfig();
 
-  try {
-    const query = buildPriceQuery(filters);
-    
-    const response = await fetch(`${baseUrl}/chat/completions`, {
+  return perplexityCircuitBreaker.execute(async () => {
+    try {
+      const query = buildPriceQuery(filters);
+      
+      const response = await fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
@@ -115,16 +117,20 @@ export async function fetchLithiumPrices(
     const prices = JSON.parse(jsonContent);
 
     return Array.isArray(prices) ? prices : [prices];
-  } catch (error) {
-    logger.error(
-      {
-        error: error instanceof Error ? error.message : String(error),
-        filters,
-      },
-      "Failed to fetch lithium prices from Perplexity"
-    );
-    throw error;
-  }
+    } catch (error) {
+      if (error instanceof CircuitBreakerError) {
+        throw error;
+      }
+      logger.error(
+        {
+          error: error instanceof Error ? error.message : String(error),
+          filters,
+        },
+        "Failed to fetch lithium prices from Perplexity"
+      );
+      throw error;
+    }
+  });
 }
 
 /**

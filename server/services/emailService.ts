@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { InternalServerError } from "../utils/errors.js";
 import { validateServiceEnv } from "../utils/envValidation.js";
+import { emailQueue } from "../jobs/queue.js";
 
 // Validate email service configuration
 const isEmailConfigured = validateServiceEnv("email");
@@ -22,7 +23,32 @@ const transporter =
 /**
  * Send email
  */
+/**
+ * Send email (enqueues job for async processing)
+ */
 export async function sendEmail(options: {
+  to: string;
+  subject: string;
+  html: string;
+  text?: string;
+}): Promise<void> {
+  if (!isEmailConfigured) {
+    throw new InternalServerError("Email service not configured. SMTP credentials required.");
+  }
+
+  // Enqueue email job for async processing
+  await emailQueue.add("send-email", {
+    to: options.to,
+    subject: options.subject,
+    html: options.html,
+    text: options.text || options.html.replace(/<[^>]*>/g, ""),
+  });
+}
+
+/**
+ * Send email synchronously (for critical emails that must be sent immediately)
+ */
+export async function sendEmailSync(options: {
   to: string;
   subject: string;
   html: string;

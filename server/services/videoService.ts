@@ -34,8 +34,9 @@ export async function createMeetingRoom(
     throw new InternalServerError("Daily.co API not configured");
   }
 
-  try {
-    const response = await fetch("https://api.daily.co/v1/rooms", {
+  return dailyCircuitBreaker.execute(async () => {
+    try {
+      const response = await fetch("https://api.daily.co/v1/rooms", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.DAILY_CO_API_KEY}`,
@@ -68,11 +69,15 @@ export async function createMeetingRoom(
       config,
       created_at: room.config.created_at || new Date().toISOString(),
     };
-  } catch (error) {
-    throw new InternalServerError(
-      `Failed to create meeting room: ${error instanceof Error ? error.message : "Unknown error"}`
-    );
-  }
+    } catch (error) {
+      if (error instanceof CircuitBreakerError) {
+        throw error;
+      }
+      throw new InternalServerError(
+        `Failed to create meeting room: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  });
 }
 
 /**
