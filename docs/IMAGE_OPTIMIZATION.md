@@ -411,3 +411,4 @@ CLOUDFRONT_DOMAIN=d1234567890.cloudfront.net
 # Supabase Storage
 SUPABASE_STORAGE_BUCKET=images
 ```
+
