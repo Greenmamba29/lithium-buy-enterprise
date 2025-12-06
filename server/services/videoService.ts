@@ -133,17 +133,18 @@ export async function deleteMeetingRoom(roomName: string): Promise<void> {
     throw new InternalServerError("Daily.co API not configured");
   }
 
-  try {
-    const response = await fetch(`https://api.daily.co/v1/rooms/${roomName}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${process.env.DAILY_CO_API_KEY}`,
-      },
-    });
+  return dailyCircuitBreaker.execute(async () => {
+    try {
+      const response = await fetch(`https://api.daily.co/v1/rooms/${roomName}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${process.env.DAILY_CO_API_KEY}`,
+        },
+      });
 
-    if (!response.ok && response.status !== 404) {
-      throw new Error(`Daily.co API error: ${response.statusText}`);
-    }
+      if (!response.ok && response.status !== 404) {
+        throw new Error(`Daily.co API error: ${response.statusText}`);
+      }
     } catch (error) {
       if (error instanceof CircuitBreakerError) {
         throw error;
