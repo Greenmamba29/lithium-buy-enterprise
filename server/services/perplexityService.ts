@@ -2,6 +2,7 @@ import { supabaseAdmin } from "../db/client.js";
 import { logger } from "../utils/logger.js";
 import { ValidationError } from "../utils/errors.js";
 import { perplexityCircuitBreaker, CircuitBreakerError } from "../utils/circuitBreaker.js";
+import { withRetry } from "../utils/retry.js";
 
 /**
  * Perplexity Labs API Service
@@ -73,7 +74,7 @@ export async function fetchLithiumPrices(
   const { apiKey, model, baseUrl } = getPerplexityConfig();
 
   return perplexityCircuitBreaker.execute(async () => {
-    try {
+    return withRetry(async () => {
       const query = buildPriceQuery(filters);
       
       const response = await fetch(`${baseUrl}/chat/completions`, {
@@ -116,20 +117,18 @@ export async function fetchLithiumPrices(
     const jsonContent = jsonMatch ? jsonMatch[1] : content;
     const prices = JSON.parse(jsonContent);
 
-    return Array.isArray(prices) ? prices : [prices];
-    } catch (error) {
-      if (error instanceof CircuitBreakerError) {
-        throw error;
-      }
-      logger.error(
-        {
-          error: error instanceof Error ? error.message : String(error),
-          filters,
-        },
-        "Failed to fetch lithium prices from Perplexity"
-      );
-      throw error;
-    }
+      return Array.isArray(prices) ? prices : [prices];
+    }, {
+      maxAttempts: 3,
+      initialDelay: 1000,
+      retryable: (error) => {
+        // Retry on network errors and 5xx errors
+        if (error instanceof CircuitBreakerError) return false;
+        if (error?.status >= 500) return true;
+        if (error instanceof TypeError && error.message.includes("fetch")) return true;
+        return false;
+      },
+    });
   });
 }
 
