@@ -1,16 +1,54 @@
+# Netlify Configuration for LithiumBuy Enterprise
+# Full-stack React + Express application
+
 [build]
   command = "npm run build"
   publish = "dist/public"
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "20"
-  # Don't set NODE_ENV=production during install/build to ensure all dependencies are available
-  # NODE_ENV will be set in the runtime environment
+  NPM_FLAGS = "--legacy-peer-deps"
 
+# Serverless function configuration for Express backend
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  included_files = ["dist/**", "server/**"]
+
+# Redirect all API calls to the serverless function
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/server/:splat"
+  status = 200
+  force = true
+
+# Redirect WebSocket connections
+[[redirects]]
+  from = "/ws"
+  to = "/.netlify/functions/server/ws"
+  status = 200
+  force = true
+
+# SPA fallback - redirect all other requests to index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  conditions = {Role = ["client"]}
 
-[functions]
-  node_bundler = "esbuild"
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Cache static assets
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
