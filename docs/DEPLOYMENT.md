@@ -53,7 +53,38 @@ npm run build
 
 ## Deployment Options
 
-### Vercel (Recommended)
+### Netlify (Recommended for full-stack deployment)
+
+Netlify provides seamless deployment with serverless functions support.
+
+**Quick Start:**
+```bash
+# Connect your GitHub repository to Netlify
+# Configure build settings in Netlify dashboard:
+# - Build command: npm run build
+# - Publish directory: dist/public
+# - Functions directory: netlify/functions
+
+# Set environment variables in Netlify dashboard
+# See docs/NETLIFY_ENV_SETUP.md for required variables
+```
+
+**Detailed Guide:** See [NETLIFY_DEPLOYMENT.md](./NETLIFY_DEPLOYMENT.md)
+
+**Key Features:**
+- ✅ Serverless Functions for Express API
+- ✅ Automatic SSL certificates
+- ✅ CDN for static assets
+- ✅ Deploy previews for PRs
+- ✅ Environment variable management
+- ⚠️ Note: WebSocket support is limited (consider external service)
+
+**Configuration Files:**
+- `netlify.toml` - Build and deploy configuration
+- `netlify/functions/server.ts` - Serverless function wrapper
+- `client/public/_redirects` - SPA routing rules
+
+### Vercel
 
 1. Install Vercel CLI:
 ```bash
