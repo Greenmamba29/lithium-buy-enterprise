@@ -93,7 +93,8 @@
     "nodemailer": "^6.9.8",
     "nanoid": "^5.0.7",
     "react-window": "^1.8.10",
-    "bullmq": "^5.4.0"
+    "bullmq": "^5.4.0",
+    "@sentry/node": "^8.0.0"
   },
   "devDependencies": {
     "@replit/vite-plugin-cartographer": "^0.4.4",

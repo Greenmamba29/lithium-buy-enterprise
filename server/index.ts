@@ -8,6 +8,8 @@ import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import { requestLogger } from "./middleware/logging.js";
 import { websocketManager } from "./services/websocketService.js";
 import { validateEnvironment } from "./utils/envValidation.js";
+import { initSentry, sentryRequestHandler, sentryTracingHandler, sentryErrorHandler } from "./utils/sentry.js";
+import { metricsMiddleware } from "./utils/monitoring.js";
 
 const app = express();
 const httpServer = createServer(app);
@@ -18,8 +20,18 @@ declare module "http" {
   }
 }
 
-// Security middleware (must be first)
+// Initialize Sentry (must be first)
+initSentry();
+
+// Sentry request and tracing handlers (must be before other middleware)
+app.use(sentryRequestHandler);
+app.use(sentryTracingHandler);
+
+// Security middleware (must be early)
 setupSecurity(app);
+
+// Performance metrics (before request logging)
+app.use(metricsMiddleware);
 
 // Request logging (before other middleware to capture all requests)
 app.use(requestLogger);
@@ -93,6 +105,9 @@ app.use((req, res, next) => {
 
   // 404 handler for undefined routes (must be before error handler)
   app.use(notFoundHandler);
+
+  // Sentry error handler (before general error handler)
+  app.use(sentryErrorHandler);
 
   // Error handler (must be last)
   app.use(errorHandler);

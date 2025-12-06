@@ -32,6 +32,10 @@ STRIPE_PUBLISHABLE_KEY=pk_live_...  # For frontend
 
 ## Optional Environment Variables
 
+### Sentry - Error Tracking & Performance Monitoring
+```env
+SENTRY_DSN=https://your-sentry-dsn@sentry.io/project-id
+```
 
 ### Google Gemini AI
 ```env

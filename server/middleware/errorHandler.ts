@@ -1,6 +1,7 @@
 import { type Request, type Response, type NextFunction } from "express";
 import { AppError, isOperationalError } from "../utils/errors.js";
 import { logger } from "../utils/logger.js";
+import { captureException } from "../utils/sentry.js";
 
 /**
  * Centralized error handling middleware
@@ -33,6 +34,8 @@ export function errorHandler(
     logger.warn(errorContext, `Operational error: ${err.message}`);
   } else {
     logger.error(errorContext, `Unexpected error: ${err.message}`);
+    // Capture unexpected errors in Sentry
+    captureException(err instanceof Error ? err : new Error(String(err)), errorContext);
   }
 
   // Handle operational errors (expected errors)

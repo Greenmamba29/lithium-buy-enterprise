@@ -1,5 +1,6 @@
 import { type Express, type Request, type Response } from "express";
 import { supabaseAdmin } from "../db/client.js";
+import { getPerformanceSummary } from "../utils/monitoring.js";
 
 /**
  * Health check endpoint
@@ -153,6 +154,8 @@ export async function readinessCheck(_req: Request, res: Response) {
 
     const statusCode = isReady ? 200 : 503;
 
+    const performance = getPerformanceSummary();
+
     res.status(statusCode).json({
       status: isReady ? "ready" : "not ready",
       timestamp: new Date().toISOString(),
@@ -161,6 +164,7 @@ export async function readinessCheck(_req: Request, res: Response) {
         redis,
         external_apis: externalAPIs,
       },
+      performance,
     });
   } catch (error) {
     res.status(503).json({
