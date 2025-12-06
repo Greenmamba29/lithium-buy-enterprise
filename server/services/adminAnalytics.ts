@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "../db/client.js";
 import { logger } from "../utils/logger.js";
+import { metricsCollector } from "../utils/monitoring.js";
 
 /**
  * Admin Analytics Service

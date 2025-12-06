@@ -6,6 +6,7 @@ import { PriceIntelligence } from "@/components/admin/PriceIntelligence";
 import { AuctionMetrics } from "@/components/admin/AuctionMetrics";
 import { ProcurementStats } from "@/components/admin/ProcurementStats";
 import { IndustryInsights } from "@/components/admin/IndustryInsights";
+import { AnalyticsEnhancements } from "@/components/admin/AnalyticsEnhancements";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 export default function AdminDashboard() {
@@ -116,6 +117,9 @@ export default function AdminDashboard() {
                 arbitrage={dashboard.arbitrageSummary}
                 news={dashboard.news}
               />
+
+              {/* Enhanced Analytics */}
+              <AnalyticsEnhancements />
             </>
           ) : null}
         </div>

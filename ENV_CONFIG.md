@@ -37,6 +37,16 @@ STRIPE_PUBLISHABLE_KEY=pk_live_...  # For frontend
 SENTRY_DSN=https://your-sentry-dsn@sentry.io/project-id
 ```
 
+### Log Aggregation (Optional)
+```env
+LOG_AGGREGATION_ENABLED=true
+LOG_AGGREGATION_URL=https://logs.example.com/api/logs
+LOG_AGGREGATION_API_KEY=your_api_key
+LOG_FILE_PATH=/var/log/lithiumbuy/app.log
+ERROR_LOG_FILE_PATH=/var/log/lithiumbuy/errors.log
+LOG_LEVEL=info  # trace, debug, info, warn, error, fatal
+```
+
 ### Google Gemini AI
 ```env
 GEMINI_API_KEY=your_gemini_api_key

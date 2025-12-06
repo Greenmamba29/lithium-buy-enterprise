@@ -9,6 +9,12 @@ import {
   getProcurementStats,
   getArbitrageSummary,
 } from "../services/adminAnalytics.js";
+import {
+  getUserGrowthData,
+  getRevenueAnalyticsData,
+  getActivityAnalyticsData,
+  getMarketShareData,
+} from "../services/analyticsService.js";
 
 /**
  * GET /api/admin/dashboard
@@ -97,6 +103,13 @@ export function registerAdminRoutes(app: Express) {
   app.get("/api/admin/dashboard/arbitrage", requireAuth, requireRole("admin"), getArbitrageData);
   app.get("/api/admin/dashboard/insights", requireAuth, requireRole("admin"), getInsights);
   app.get("/api/admin/dashboard/news", requireAuth, requireRole("admin"), getNews);
+  
+  // Enhanced analytics routes
+  app.get("/api/admin/analytics/user-growth", requireAuth, requireRole("admin"), getUserGrowth);
+  app.get("/api/admin/analytics/revenue", requireAuth, requireRole("admin"), getRevenueAnalytics);
+  app.get("/api/admin/analytics/activity", requireAuth, requireRole("admin"), getActivityAnalytics);
+  app.get("/api/admin/analytics/market-share", requireAuth, requireRole("admin"), getMarketShare);
+  app.get("/api/admin/analytics/performance", requireAuth, requireRole("admin"), getPerformanceMetrics);
 }
 
 
