@@ -241,3 +241,4 @@ ANALYZE market_briefings;
 ANALYZE generated_content;
 ANALYZE content_publishing;
 ANALYZE content_analytics;
+
