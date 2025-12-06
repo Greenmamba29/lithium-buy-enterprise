@@ -15,7 +15,7 @@ import { logger } from "./logger.js";
  */
 
 export interface TransactionOperation<T = any> {
-  execute: () => Promise<T>;
+  execute: (previousResults?: any[]) => Promise<T>;
   rollback?: (result: T) => Promise<void>;
   description: string;
 }
@@ -55,7 +55,7 @@ export async function executeTransaction<T = any>(
         logger.debug({ operation: operation.description }, "Executing operation");
       }
 
-      const result = await operation.execute();
+      const result = await operation.execute(results);
       results.push(result);
       completedOperations.push({ operation, result });
 

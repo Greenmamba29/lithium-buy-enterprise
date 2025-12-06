@@ -49,11 +49,15 @@ export async function enhanceImage(
     // This is a placeholder implementation
 
     return response.text();
-  } catch (error) {
-    throw new InternalServerError(
-      `Failed to enhance image: ${error instanceof Error ? error.message : "Unknown error"}`
-    );
-  }
+    } catch (error) {
+      if (error instanceof CircuitBreakerError) {
+        throw error;
+      }
+      throw new InternalServerError(
+        `Failed to enhance image: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  });
 }
 
 /**

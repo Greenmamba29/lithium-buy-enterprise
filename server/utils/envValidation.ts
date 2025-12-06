@@ -64,7 +64,7 @@ export function validateEnvironment(): void {
 
     if (envVar.required && !value) {
       missing.push(`${envVar.name} - ${envVar.description}`);
-    } else if (!value && envVar.name.includes("API_KEY") || envVar.name.includes("SECRET")) {
+    } else if (!value && (envVar.name.includes("API_KEY") || envVar.name.includes("SECRET"))) {
       warnings.push(`${envVar.name} - ${envVar.description} (optional but recommended)`);
     }
   }
