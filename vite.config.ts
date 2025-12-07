@@ -54,14 +54,8 @@ export default defineConfig({
     sourcemap: process.env.NODE_ENV === 'production' ? 'hidden' : true,
     // Optimize chunk size
     chunkSizeWarningLimit: 1000,
-    // Minify with terser for better compression
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: process.env.NODE_ENV === 'production',
-        drop_debugger: true,
-      },
-    },
+    // Use esbuild minifier (already installed, faster than terser)
+    minify: 'esbuild',
   },
   server: {
     fs: {
