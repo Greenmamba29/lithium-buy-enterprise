@@ -1,4 +1,5 @@
 import { InternalServerError } from "../utils/errors.js";
+import { dailyCircuitBreaker, CircuitBreakerError } from "../utils/circuitBreaker.js";
 
 /**
  * Daily.co Video Service
