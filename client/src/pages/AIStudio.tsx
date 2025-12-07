@@ -36,6 +36,14 @@ export default function AIStudio() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Revoke old blob URL before creating new one
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      if (generatedImage && generatedImage.startsWith('blob:')) {
+        URL.revokeObjectURL(generatedImage);
+      }
+      
       setSelectedFile(file);
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
@@ -52,6 +60,14 @@ export default function AIStudio() {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
     if (file && file.type.startsWith('image/')) {
+      // Revoke old blob URL before creating new one
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      if (generatedImage && generatedImage.startsWith('blob:')) {
+        URL.revokeObjectURL(generatedImage);
+      }
+      
       setSelectedFile(file);
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
@@ -77,7 +93,7 @@ export default function AIStudio() {
     }
   };
 
-  // Cleanup blob URLs to prevent memory leaks
+  // Cleanup blob URLs to prevent memory leaks on unmount
   useEffect(() => {
     return () => {
       if (previewUrl) {
@@ -87,7 +103,7 @@ export default function AIStudio() {
         URL.revokeObjectURL(generatedImage);
       }
     };
-  }, [previewUrl, generatedImage]);
+  }, []);
 
   const clearSelection = () => {
     // Revoke existing blob URLs before clearing
@@ -114,8 +130,18 @@ export default function AIStudio() {
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950 transition-colors duration-500" data-testid="page-ai-studio">
-      <div className="pt-32 pb-20 bg-stone-100 dark:bg-stone-900 transition-colors duration-500">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+      {/* Seamless blend from header */}
+      <div className="pt-24 pb-20 bg-stone-100 dark:bg-stone-900 transition-colors duration-500 relative">
+        {/* Seamless blend overlay */}
+        <div 
+          className="absolute inset-0 top-0 h-32 pointer-events-none"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(28, 25, 23, 0.9) 0%, rgba(28, 25, 23, 0.88) 30%, rgba(28, 25, 23, 0.75) 70%, transparent 100%)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+          }}
+        />
+        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <span className="text-gold font-bold tracking-[0.2em] text-xs uppercase mb-4 block">
             Powered by Gemini 2.5 Flash
           </span>
@@ -181,6 +207,7 @@ export default function AIStudio() {
                         src={previewUrl} 
                         alt="Preview" 
                         className="max-h-64 mx-auto rounded-lg shadow-lg"
+                        loading="eager"
                         data-testid="image-preview"
                       />
                       <button 
@@ -288,6 +315,7 @@ export default function AIStudio() {
                     src={generatedImage} 
                     alt="Generated Vision" 
                     className="w-full h-auto max-h-[600px] object-contain mx-auto rounded-lg shadow-lg"
+                    loading="eager"
                     data-testid="image-result"
                   />
                   <div className="absolute bottom-8 right-8 opacity-0 group-hover:opacity-100 transition-opacity">

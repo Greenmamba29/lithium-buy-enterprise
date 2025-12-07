@@ -33,8 +33,18 @@ export default function Auctions() {
   const pagination = data?.pagination || { page: 1, limit, total: 0, totalPages: 1 };
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-stone-950 p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-stone-50 dark:bg-stone-950">
+      {/* Seamless blend from header */}
+      <div className="pt-24 pb-8 relative">
+        <div 
+          className="absolute inset-0 top-0 h-32 pointer-events-none"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(28, 25, 23, 0.9) 0%, rgba(28, 25, 23, 0.88) 30%, rgba(28, 25, 23, 0.75) 70%, transparent 100%)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+          }}
+        />
+        <div className="relative z-10 max-w-7xl mx-auto p-8 space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-serif font-bold mb-2 flex items-center gap-2">
@@ -132,6 +142,7 @@ export default function Auctions() {
             )}
           </>
         )}
+        </div>
       </div>
     </div>
   );

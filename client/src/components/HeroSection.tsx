@@ -73,17 +73,30 @@ function FlipCard({ card, index }: { card: ApplicationCard; index: number }) {
 
 export default function HeroSection({ onSearch }: HeroSectionProps) {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-stone-950" data-testid="hero-section">
-      <div className="absolute inset-0 z-0">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden" data-testid="hero-section" style={{ marginTop: 0, paddingTop: 0 }}>
+      {/* Background layer that seamlessly continues from header */}
+      <div className="absolute inset-0 z-0" style={{ top: 0 }}>
         <img 
           src={heroImage}
           alt="Lithium element with premium applications" 
-          className="w-full h-full object-cover object-center opacity-90"
+          className="w-full h-full object-cover object-center"
+          style={{ opacity: 0.75 }}
+          loading="eager"
+          fetchPriority="high"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-stone-900/90 via-stone-950/50 to-stone-950" />
-        <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/20 to-transparent" />
+        {/* Exact header match at top for seamless blend - same bg-stone-900/90 backdrop-blur-md */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(28, 25, 23, 0.9) 0%, rgba(28, 25, 23, 0.9) 8%, rgba(28, 25, 23, 0.89) 15%, rgba(28, 25, 23, 0.86) 25%, rgba(28, 25, 23, 0.8) 40%, rgba(28, 25, 23, 0.72) 55%, rgba(28, 25, 23, 0.62) 75%)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+          }}
+        />
       </div>
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-32">
+      
+      {/* Content with padding to account for fixed header */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-24 pb-32">
         <div className="grid lg:grid-cols-1 gap-16 items-center justify-center">
           <div className="text-center max-w-2xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 border border-gold/30 mb-6 animate-fade-in">
@@ -156,7 +169,6 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
           </div>
         </div>
       </div>
-      <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-stone-950 to-transparent pointer-events-none" />
     </section>
   );
 }

@@ -52,26 +52,78 @@ const requiredEnvVars: EnvVar[] = [
 ];
 
 /**
+ * Validate URL format
+ */
+function isValidUrl(urlString: string): boolean {
+  try {
+    const url = new URL(urlString);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Validate email format
+ */
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+/**
  * Validate environment variables
  * Throws error if required variables are missing
  */
 export function validateEnvironment(): void {
   const missing: string[] = [];
   const warnings: string[] = [];
+  const formatErrors: string[] = [];
 
   for (const envVar of requiredEnvVars) {
     const value = process.env[envVar.name];
 
     if (envVar.required && !value) {
       missing.push(`${envVar.name} - ${envVar.description}`);
+    } else if (value) {
+      // Format validation for specific types
+      if (envVar.name.includes("URL") && !isValidUrl(value)) {
+        formatErrors.push(
+          `${envVar.name} must be a valid URL (e.g., https://example.com)`
+        );
+      }
+      
+      if (envVar.name.includes("EMAIL") || (envVar.name.includes("SMTP_USER") && value.includes("@"))) {
+        if (!isValidEmail(value)) {
+          formatErrors.push(
+            `${envVar.name} must be a valid email address`
+          );
+        }
+      }
+      
+      if (envVar.name.includes("PORT")) {
+        const port = parseInt(value, 10);
+        if (isNaN(port) || port < 1 || port > 65535) {
+          formatErrors.push(
+            `${envVar.name} must be a valid port number (1-65535)`
+          );
+        }
+      }
     } else if (!value && (envVar.name.includes("API_KEY") || envVar.name.includes("SECRET"))) {
       warnings.push(`${envVar.name} - ${envVar.description} (optional but recommended)`);
     }
   }
 
+  if (formatErrors.length > 0) {
+    throw new Error(
+      `Environment variable format errors:\n${formatErrors.map((v) => `  - ${v}`).join("\n")}`
+    );
+  }
+
   if (missing.length > 0) {
     throw new Error(
-      `Missing required environment variables:\n${missing.map((v) => `  - ${v}`).join("\n")}`
+      `Missing required environment variables:\n${missing.map((v) => `  - ${v}`).join("\n")}\n\n` +
+      `Please check your .env file or environment configuration.`
     );
   }
 

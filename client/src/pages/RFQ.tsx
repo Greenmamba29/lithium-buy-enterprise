@@ -36,18 +36,28 @@ export default function RFQ() {
   });
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-stone-950 p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-serif font-bold mb-2 flex items-center gap-2">
-              <FileText className="h-8 w-8" />
-              Request for Quote (RFQ)
-            </h1>
-            <p className="text-muted-foreground">
-              Create and manage RFQs to source lithium products from verified suppliers
-            </p>
-          </div>
+    <div className="min-h-screen bg-stone-50 dark:bg-stone-950">
+      {/* Seamless blend from header */}
+      <div className="pt-24 pb-8 relative">
+        <div 
+          className="absolute inset-0 top-0 h-32 pointer-events-none"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(28, 25, 23, 0.9) 0%, rgba(28, 25, 23, 0.88) 30%, rgba(28, 25, 23, 0.75) 70%, transparent 100%)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+          }}
+        />
+        <div className="relative z-10 max-w-7xl mx-auto p-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-serif font-bold mb-2 flex items-center gap-2">
+                <FileText className="h-8 w-8" />
+                Request for Quote (RFQ)
+              </h1>
+              <p className="text-muted-foreground">
+                Create and manage RFQs to source lithium products from verified suppliers
+              </p>
+            </div>
           <Button onClick={() => setShowCreateForm(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Create RFQ
@@ -146,6 +156,7 @@ export default function RFQ() {
             ))}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

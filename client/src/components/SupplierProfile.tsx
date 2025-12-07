@@ -290,6 +290,7 @@ export default function SupplierProfile({ supplier }: SupplierProfileProps) {
                         src={avatars[index % avatars.length]}
                         alt={review.author}
                         className="h-10 w-10 rounded-full object-cover"
+                        loading="lazy"
                       />
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">

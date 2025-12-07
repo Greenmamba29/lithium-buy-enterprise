@@ -64,8 +64,17 @@ export default function Telebuy() {
 
   return (
     <div className="min-h-screen bg-background" data-testid="page-telebuy">
-      <div className="bg-primary text-primary-foreground py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 text-center">
+      {/* Seamless blend from header */}
+      <div className="bg-primary text-primary-foreground py-16 relative">
+        <div 
+          className="absolute inset-0 top-0 h-32 pointer-events-none"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(28, 25, 23, 0.9) 0%, rgba(28, 25, 23, 0.88) 30%, rgba(28, 25, 23, 0.75) 70%, transparent 100%)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+          }}
+        />
+        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 text-center">
           <h1 className="text-4xl font-bold mb-4">Telebuy</h1>
           <p className="text-xl text-primary-foreground/80 max-w-2xl mx-auto">
             Complete lithium transactions end-to-end with video calls, 

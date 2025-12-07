@@ -50,6 +50,7 @@ export function QuoteComparison({
                       src={response.supplier.logo_url}
                       alt={response.supplier.name}
                       className="h-8 w-8 rounded"
+                      loading="lazy"
                     />
                   )}
                   <div>
