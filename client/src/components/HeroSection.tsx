@@ -74,13 +74,19 @@ function FlipCard({ card, index }: { card: ApplicationCard; index: number }) {
 export default function HeroSection({ onSearch }: HeroSectionProps) {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden" data-testid="hero-section" style={{ marginTop: 0, paddingTop: 0 }}>
-      {/* Background layer that seamlessly continues from header */}
-      <div className="absolute inset-0 z-0" style={{ top: 0 }}>
+      {/* Background layer that seamlessly continues from header - full coverage */}
+      <div className="absolute inset-0 z-0 w-full h-full" style={{ top: 0, left: 0, right: 0, bottom: 0 }}>
         <img 
           src={heroImage}
           alt="Lithium element with premium applications" 
-          className="w-full h-full object-cover object-center"
-          style={{ opacity: 0.75 }}
+          className="absolute inset-0 w-full h-full object-cover object-center"
+          style={{ 
+            opacity: 0.75,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center'
+          }}
           loading="eager"
           fetchPriority="high"
         />
