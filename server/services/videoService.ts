@@ -144,15 +144,11 @@ export async function deleteMeetingRoom(roomName: string): Promise<void> {
     if (!response.ok && response.status !== 404) {
       throw new Error(`Daily.co API error: ${response.statusText}`);
     }
-    } catch (error) {
-      if (error instanceof CircuitBreakerError) {
-        throw error;
-      }
-      throw new InternalServerError(
-        `Failed to delete meeting room: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
-    }
-  });
+  } catch (error) {
+    throw new InternalServerError(
+      `Failed to delete meeting room: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
 }
 
 /**
