@@ -162,7 +162,9 @@ Before deploying, verify:
 ## Next Deployment
 
 After pushing these fixes:
-1. Netlify will automatically trigger a new build
+1. **Manually trigger a Netlify build** (Netlify does NOT automatically trigger builds):
+   - Go to Netlify Dashboard → Site → Deploys → "Trigger deploy" → "Clear cache and deploy site"
+   - OR push to the connected branch to trigger an automatic build
 2. The build should succeed without terser error
 3. Monitor logs for any other issues
 4. Generate and commit package-lock.json for future consistency
