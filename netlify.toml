@@ -4,7 +4,8 @@
 
 [build.environment]
   NODE_VERSION = "20"
-  NODE_ENV = "production"
+  # Don't set NODE_ENV=production during install/build to ensure all dependencies are available
+  # NODE_ENV will be set in the runtime environment
 
 [[redirects]]
   from = "/*"
