@@ -1,0 +1,261 @@
+name: Notion-GitHub Sync
+
+on:
+  issues:
+    types: [opened, edited, closed, reopened, labeled, unlabeled]
+  pull_request:
+    types: [opened, closed, merged]
+  schedule:
+    # Run every 15 minutes to sync Notion → GitHub
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  sync-to-notion:
+    name: Sync GitHub → Notion
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' || github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          npm install -g @notionhq/client
+          npm install node-fetch
+
+      - name: Sync Issue to Notion Feature Tracker
+        if: github.event_name == 'issues'
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_FEATURE_DB: ${{ secrets.NOTION_FEATURE_DB }}
+        run: |
+          cat > sync-issue.js << 'EOF'
+          const { Client } = require('@notionhq/client');
+
+          const notion = new Client({ auth: process.env.NOTION_TOKEN });
+          const databaseId = process.env.NOTION_FEATURE_DB;
+
+          async function syncIssueToNotion() {
+            const issue = JSON.parse(process.env.GITHUB_ISSUE);
+            const action = process.env.GITHUB_ACTION;
+
+            // Extract epic from labels
+            const epicLabel = issue.labels.find(l => l.name.startsWith('epic-'));
+            const epic = epicLabel ? {
+              'epic-carbon': 'Epic 1: Carbon Calculator',
+              'epic-3pl': 'Epic 2: 3PL Middleware',
+              'epic-auctions': 'Epic 3: Spot Auctions',
+              'epic-green': 'Epic 4: Green Directory'
+            }[epicLabel.name] || 'Epic 1: Carbon Calculator' : 'Epic 1: Carbon Calculator';
+
+            // Extract priority from labels
+            const priorityLabel = issue.labels.find(l => l.name.startsWith('priority-'));
+            const priority = priorityLabel ? {
+              'priority-p0': 'P0-Critical',
+              'priority-p1': 'P1-High',
+              'priority-p2': 'P2-Medium',
+              'priority-p3': 'P3-Low'
+            }[priorityLabel.name] || 'P2-Medium' : 'P2-Medium';
+
+            // Map GitHub state to Notion status
+            const status = issue.state === 'closed' ? 'Complete' :
+                          issue.labels.some(l => l.name === 'in-progress') ? 'In Progress' :
+                          issue.labels.some(l => l.name === 'testing') ? 'Testing' : 'Backlog';
+
+            // Check if page already exists
+            const existing = await notion.databases.query({
+              database_id: databaseId,
+              filter: {
+                property: 'GitHub Issue',
+                rich_text: { equals: `#${issue.number}` }
+              }
+            });
+
+            const properties = {
+              Name: { title: [{ text: { content: issue.title } }] },
+              Status: { select: { name: status } },
+              Priority: { select: { name: priority } },
+              Epic: { select: { name: epic } },
+              'GitHub Issue': { rich_text: [{ text: { content: `#${issue.number}` } }] },
+              'GitHub URL': { url: issue.html_url }
+            };
+
+            if (existing.results.length > 0) {
+              // Update existing page
+              await notion.pages.update({
+                page_id: existing.results[0].id,
+                properties
+              });
+              console.log(`Updated Notion page for issue #${issue.number}`);
+            } else {
+              // Create new page
+              await notion.pages.create({
+                parent: { database_id: databaseId },
+                properties
+              });
+              console.log(`Created Notion page for issue #${issue.number}`);
+            }
+          }
+
+          syncIssueToNotion().catch(console.error);
+          EOF
+
+          export GITHUB_ISSUE='${{ toJson(github.event.issue) }}'
+          export GITHUB_ACTION='${{ github.event.action }}'
+          node sync-issue.js
+
+      - name: Sync PR to Sprint Planning
+        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_SPRINT_DB: ${{ secrets.NOTION_SPRINT_DB }}
+        run: |
+          cat > sync-pr.js << 'EOF'
+          const { Client } = require('@notionhq/client');
+
+          const notion = new Client({ auth: process.env.NOTION_TOKEN });
+          const databaseId = process.env.NOTION_SPRINT_DB;
+
+          async function syncPRToNotion() {
+            const pr = JSON.parse(process.env.GITHUB_PR);
+
+            // Get current sprint (most recent active or planning sprint)
+            const sprints = await notion.databases.query({
+              database_id: databaseId,
+              filter: {
+                or: [
+                  { property: 'Status', select: { equals: 'Active' } },
+                  { property: 'Status', select: { equals: 'Planning' } }
+                ]
+              },
+              sorts: [{ property: 'Sprint Number', direction: 'descending' }]
+            });
+
+            if (sprints.results.length > 0) {
+              const currentSprint = sprints.results[0];
+              const prInfo = `PR #${pr.number}: ${pr.title} (${pr.html_url})`;
+
+              // Get existing PR list
+              const existingPRs = currentSprint.properties['Pull Requests']?.rich_text || [];
+              const existingText = existingPRs.map(t => t.plain_text).join('\n');
+              const updatedText = existingText ? `${existingText}\n${prInfo}` : prInfo;
+
+              // Update sprint with new PR
+              await notion.pages.update({
+                page_id: currentSprint.id,
+                properties: {
+                  'Pull Requests': {
+                    rich_text: [{ text: { content: updatedText.slice(0, 2000) } }]
+                  }
+                }
+              });
+              console.log(`Added PR #${pr.number} to current sprint`);
+            }
+          }
+
+          syncPRToNotion().catch(console.error);
+          EOF
+
+          export GITHUB_PR='${{ toJson(github.event.pull_request) }}'
+          node sync-pr.js
+
+  sync-from-notion:
+    name: Sync Notion → GitHub
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          npm install -g @notionhq/client
+          npm install @octokit/rest
+
+      - name: Sync Notion Features to GitHub Issues
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_FEATURE_DB: ${{ secrets.NOTION_FEATURE_DB }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          cat > sync-from-notion.js << 'EOF'
+          const { Client } = require('@notionhq/client');
+          const { Octokit } = require('@octokit/rest');
+
+          const notion = new Client({ auth: process.env.NOTION_TOKEN });
+          const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+          const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+          const databaseId = process.env.NOTION_FEATURE_DB;
+
+          async function syncFromNotion() {
+            // Get all pages from Feature Tracker that don't have GitHub issues yet
+            const response = await notion.databases.query({
+              database_id: databaseId,
+              filter: {
+                property: 'GitHub Issue',
+                rich_text: { is_empty: true }
+              }
+            });
+
+            for (const page of response.results) {
+              const props = page.properties;
+              const title = props.Name?.title?.[0]?.plain_text || 'Untitled';
+              const priority = props.Priority?.select?.name || 'P2-Medium';
+              const epic = props.Epic?.select?.name || '';
+              const acceptanceCriteria = props['Acceptance Criteria']?.rich_text?.[0]?.plain_text || '';
+
+              // Map epic to label
+              const epicLabel = {
+                'Epic 1: Carbon Calculator': 'epic-carbon',
+                'Epic 2: 3PL Middleware': 'epic-3pl',
+                'Epic 3: Spot Auctions': 'epic-auctions',
+                'Epic 4: Green Directory': 'epic-green'
+              }[epic] || 'epic-carbon';
+
+              const priorityLabel = {
+                'P0-Critical': 'priority-p0',
+                'P1-High': 'priority-p1',
+                'P2-Medium': 'priority-p2',
+                'P3-Low': 'priority-p3'
+              }[priority] || 'priority-p2';
+
+              // Create GitHub issue
+              const issue = await octokit.issues.create({
+                owner,
+                repo,
+                title,
+                body: acceptanceCriteria ? `## Acceptance Criteria\n\n${acceptanceCriteria}` : '',
+                labels: [epicLabel, priorityLabel]
+              });
+
+              // Update Notion page with GitHub issue number and URL
+              await notion.pages.update({
+                page_id: page.id,
+                properties: {
+                  'GitHub Issue': { rich_text: [{ text: { content: `#${issue.data.number}` } }] },
+                  'GitHub URL': { url: issue.data.html_url }
+                }
+              });
+
+              console.log(`Created GitHub issue #${issue.data.number} for Notion page`);
+            }
+          }
+
+          syncFromNotion().catch(console.error);
+          EOF
+
+          node sync-from-notion.js
