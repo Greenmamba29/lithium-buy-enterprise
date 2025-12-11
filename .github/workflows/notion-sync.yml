@@ -1,0 +1,66 @@
+name: Notion Sync
+
+on:
+  schedule:
+    # Run every hour
+    - cron: '0 * * * *'
+  workflow_dispatch:
+  issues:
+    types: [opened, edited, closed, reopened]
+
+jobs:
+  sync-to-notion:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Sync Issue to Notion
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_STATE: ${{ github.event.issue.state }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+          ISSUE_LABELS: ${{ toJSON(github.event.issue.labels) }}
+        run: |
+          echo "Syncing issue #$ISSUE_NUMBER to Notion"
+          # Add your Notion sync script here
+          # For now, this is a placeholder
+          node scripts/sync-to-notion.js || echo "Sync script not yet implemented"
+
+  sync-from-notion:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch from Notion and Create Issues
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Fetching tasks from Notion database"
+          # Add your Notion fetch script here
+          node scripts/sync-from-notion.js || echo "Sync script not yet implemented"
+
+      - name: Report Status
+        if: always()
+        run: |
+          echo "Notion sync completed at $(date)"
