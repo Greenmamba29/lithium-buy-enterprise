@@ -192,6 +192,10 @@ export async function getPriceIntelligenceData(days = 90): Promise<{
 /**
  * Get auction metrics
  */
+/**
+ * Get auction metrics with PRD-specific KPIs
+ * PRD Metrics: GMV, fill rate, bid velocity, auction success rate
+ */
 export async function getAuctionMetrics(): Promise<{
   totalAuctions: number;
   liveAuctions: number;
@@ -200,11 +204,19 @@ export async function getAuctionMetrics(): Promise<{
   averageBidAmount: number;
   totalValue: number;
   auctionsByType: Record<string, number>;
+  // PRD-specific metrics
+  gmv: number; // Gross Merchandise Value
+  fillRate: number; // Percentage of auctions with ≥1 bid
+  bidVelocity: number; // Bids per minute
+  auctionSuccessRate: number; // Percentage of auctions with ≥1 bid
+  averageBidsPerAuction: number;
+  uniqueBuyers: number;
+  sellerRepeatRate: number; // Percentage of sellers with multiple auctions
 }> {
   try {
     const { data: auctions, error: auctionError } = await supabaseAdmin
       .from("auctions")
-      .select("id, auction_type, status, current_bid, currency");
+      .select("id, auction_type, status, current_bid, starting_price, final_price, quantity_total, currency, seller_id, scheduled_start, scheduled_end");
 
     if (auctionError) {
       throw new Error(`Failed to fetch auctions: ${auctionError.message}`);
@@ -212,16 +224,22 @@ export async function getAuctionMetrics(): Promise<{
 
     const { data: bids, error: bidError } = await supabaseAdmin
       .from("bids")
-      .select("amount, currency")
+      .select("id, auction_id, bidder_id, amount, currency, created_at")
       .eq("is_retracted", false);
 
     if (bidError) {
       logger.warn({ error: bidError.message }, "Failed to fetch bids");
     }
 
+    const { data: closedAuctions } = await supabaseAdmin
+      .from("auctions")
+      .select("id, final_price, quantity_total")
+      .in("status", ["closed", "completed"])
+      .not("final_price", "is", null);
+
     const totalAuctions = auctions?.length || 0;
-    const liveAuctions = auctions?.filter((a) => a.status === "live").length || 0;
-    const endedAuctions = auctions?.filter((a) => a.status === "ended").length || 0;
+    const liveAuctions = auctions?.filter((a) => a.status === "active").length || 0;
+    const endedAuctions = auctions?.filter((a) => a.status === "closed" || a.status === "completed").length || 0;
     const totalBids = bids?.length || 0;
     const averageBidAmount =
       bids && bids.length > 0
@@ -236,6 +254,45 @@ export async function getAuctionMetrics(): Promise<{
       auctionsByType[a.auction_type] = (auctionsByType[a.auction_type] || 0) + 1;
     });
 
+    // PRD: Calculate GMV (Gross Merchandise Value)
+    // GMV = sum of (final_price * quantity_total) for closed/completed auctions
+    const gmv = closedAuctions?.reduce((sum, a) => {
+      const price = parseFloat(a.final_price || "0");
+      const quantity = parseFloat(a.quantity_total || "0");
+      return sum + price * quantity;
+    }, 0) || 0;
+
+    // PRD: Calculate fill rate (auctions with ≥1 bid)
+    const auctionsWithBids = new Set(bids?.map((b) => b.auction_id) || []);
+    const fillRate = endedAuctions > 0 ? (auctionsWithBids.size / endedAuctions) * 100 : 0;
+
+    // PRD: Calculate bid velocity (bids per minute)
+    // Get bids from last 24 hours
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const recentBids = bids?.filter((b) => new Date(b.created_at) >= oneDayAgo) || [];
+    const minutesInDay = 24 * 60;
+    const bidVelocity = recentBids.length / minutesInDay;
+
+    // PRD: Auction success rate (auctions with ≥1 bid)
+    const auctionSuccessRate = totalAuctions > 0 ? (auctionsWithBids.size / totalAuctions) * 100 : 0;
+
+    // Average bids per auction
+    const averageBidsPerAuction = totalAuctions > 0 ? totalBids / totalAuctions : 0;
+
+    // Unique buyers
+    const uniqueBuyers = new Set(bids?.map((b) => b.bidder_id) || []).size;
+
+    // Seller repeat rate (sellers with multiple auctions)
+    const sellerAuctionCounts = new Map<string, number>();
+    auctions?.forEach((a) => {
+      if (a.seller_id) {
+        sellerAuctionCounts.set(a.seller_id, (sellerAuctionCounts.get(a.seller_id) || 0) + 1);
+      }
+    });
+    const sellersWithMultipleAuctions = Array.from(sellerAuctionCounts.values()).filter((count) => count > 1).length;
+    const totalSellers = sellerAuctionCounts.size;
+    const sellerRepeatRate = totalSellers > 0 ? (sellersWithMultipleAuctions / totalSellers) * 100 : 0;
+
     return {
       totalAuctions,
       liveAuctions,
@@ -244,6 +301,14 @@ export async function getAuctionMetrics(): Promise<{
       averageBidAmount,
       totalValue,
       auctionsByType,
+      // PRD metrics
+      gmv,
+      fillRate,
+      bidVelocity,
+      auctionSuccessRate,
+      averageBidsPerAuction,
+      uniqueBuyers,
+      sellerRepeatRate,
     };
   } catch (error) {
     logger.error(
@@ -251,6 +316,122 @@ export async function getAuctionMetrics(): Promise<{
         error: error instanceof Error ? error.message : String(error),
       },
       "Failed to get auction metrics"
+    );
+    throw error;
+  }
+}
+
+/**
+ * Get live auction count (PRD: for admin monitoring)
+ */
+export async function getLiveAuctionCount(): Promise<number> {
+  try {
+    const { count, error } = await supabaseAdmin
+      .from("auctions")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "active");
+
+    if (error) {
+      throw new Error(`Failed to fetch live auctions: ${error.message}`);
+    }
+
+    return count || 0;
+  } catch (error) {
+    logger.error(
+      {
+        error: error instanceof Error ? error.message : String(error),
+      },
+      "Failed to get live auction count"
+    );
+    throw error;
+  }
+}
+
+/**
+ * Get flagged auctions (for anti-manipulation monitoring)
+ */
+export async function getFlaggedAuctions(): Promise<any[]> {
+  try {
+    // Get auctions with verification_status = 'flagged'
+    const { data, error } = await supabaseAdmin
+      .from("auctions")
+      .select("*")
+      .eq("verification_status", "flagged")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw new Error(`Failed to fetch flagged auctions: ${error.message}`);
+    }
+
+    return data || [];
+  } catch (error) {
+    logger.error(
+      {
+        error: error instanceof Error ? error.message : String(error),
+      },
+      "Failed to get flagged auctions"
+    );
+    throw error;
+  }
+}
+
+/**
+ * Get user management stats (KYC pending, user counts)
+ */
+export async function getUserManagementStats(): Promise<{
+  totalUsers: number;
+  kycPending: number;
+  kycApproved: number;
+  kycRejected: number;
+  suppliers: number;
+  buyers: number;
+}> {
+  try {
+    const { count: totalUsers } = await supabaseAdmin
+      .from("user_profiles")
+      .select("*", { count: "exact", head: true });
+
+    const { count: kycPending } = await supabaseAdmin
+      .from("kyc_verifications")
+      .select("*", { count: "exact", head: true })
+      .eq("kyc_status", "pending");
+
+    const { count: kycApproved } = await supabaseAdmin
+      .from("kyc_verifications")
+      .select("*", { count: "exact", head: true })
+      .eq("kyc_status", "approved");
+
+    const { count: kycRejected } = await supabaseAdmin
+      .from("kyc_verifications")
+      .select("*", { count: "exact", head: true })
+      .eq("kyc_status", "rejected");
+
+    const { count: suppliers } = await supabaseAdmin
+      .from("suppliers")
+      .select("*", { count: "exact", head: true });
+
+    // Buyers are users who have placed bids
+    const { data: buyers } = await supabaseAdmin
+      .from("bids")
+      .select("bidder_id")
+      .limit(1000);
+
+    const uniqueBuyers = new Set(buyers?.map((b) => b.bidder_id) || []).size;
+
+    return {
+      totalUsers: totalUsers || 0,
+      kycPending: kycPending || 0,
+      kycApproved: kycApproved || 0,
+      kycRejected: kycRejected || 0,
+      suppliers: suppliers || 0,
+      buyers: uniqueBuyers,
+    };
+  } catch (error) {
+    logger.error(
+      {
+        error: error instanceof Error ? error.message : String(error),
+      },
+      "Failed to get user management stats"
     );
     throw error;
   }

@@ -8,6 +8,9 @@ import {
   getAuctionMetrics,
   getProcurementStats,
   getArbitrageSummary,
+  getLiveAuctionCount,
+  getFlaggedAuctions,
+  getUserManagementStats,
 } from "../services/adminAnalytics.js";
 import {
   getUserGrowthData,
@@ -110,6 +113,27 @@ export function registerAdminRoutes(app: Express) {
   app.get("/api/admin/analytics/activity", requireAuth, requireRole("admin"), getActivityAnalytics);
   app.get("/api/admin/analytics/market-share", requireAuth, requireRole("admin"), getMarketShare);
   app.get("/api/admin/analytics/performance", requireAuth, requireRole("admin"), getPerformanceMetrics);
+  
+  // PRD-specific admin routes
+  app.get("/api/admin/auctions/live-count", requireAuth, requireRole("admin"), asyncHandler(async (req: Request, res: Response) => {
+    const count = await getLiveAuctionCount();
+    res.json({ data: { live_auctions: count } });
+  }));
+  
+  app.get("/api/admin/auctions/flagged", requireAuth, requireRole("admin"), asyncHandler(async (req: Request, res: Response) => {
+    const flagged = await getFlaggedAuctions();
+    res.json({ data: flagged });
+  }));
+  
+  app.get("/api/admin/users/stats", requireAuth, requireRole("admin"), asyncHandler(async (req: Request, res: Response) => {
+    const stats = await getUserManagementStats();
+    res.json({ data: stats });
+  }));
+  
+  app.get("/api/admin/compliance", requireAuth, requireRole("admin"), asyncHandler(async (req: Request, res: Response) => {
+    // TODO: Implement audit logs and fraud alerts
+    res.json({ data: { audit_logs: [], fraud_alerts: [] } });
+  }));
 }
 
 

@@ -69,6 +69,7 @@ class WebSocketManager {
 
   /**
    * Handle incoming WebSocket messages
+   * PRD: Supports subscribe_auction event type
    */
   private async handleMessage(ws: WebSocket, data: any): Promise<void> {
     const client = this.clients.get(ws);
@@ -77,6 +78,9 @@ class WebSocketManager {
     switch (data.type) {
       case "subscribe":
         await this.handleSubscribe(ws, data.channel, data.userId);
+        break;
+      case "subscribe_auction": // PRD event type
+        await this.handleSubscribe(ws, `auction:${data.auction_id}`, data.userId);
         break;
       case "unsubscribe":
         this.handleUnsubscribe(ws, data.channel);
@@ -175,6 +179,7 @@ class WebSocketManager {
 
   /**
    * Subscribe to auction updates via Supabase Realtime
+   * PRD: Enhanced with bid ranking, outbid notifications, and auction closure events
    */
   private async subscribeToAuction(auctionId: string, ws: WebSocket): Promise<void> {
     const channel = supabaseAdmin
@@ -187,11 +192,30 @@ class WebSocketManager {
           table: "auctions",
           filter: `id=eq.${auctionId}`,
         },
-        (payload) => {
-          this.broadcastToChannel(`auction:${auctionId}`, {
-            type: "auction_update",
-            data: payload,
-          });
+        async (payload) => {
+          // Check if auction was closed
+          if (payload.new?.status === "closed" || payload.new?.status === "completed") {
+            // Fetch winner details
+            const { data: auction } = await supabaseAdmin
+              .from("auctions")
+              .select("winning_bid_id, winning_buyer_id, final_price")
+              .eq("id", auctionId)
+              .single();
+
+            this.broadcastToChannel(`auction:${auctionId}`, {
+              type: "auction_closed", // PRD event type
+              auction_id: auctionId,
+              status: payload.new.status,
+              winning_buyer_id: auction?.winning_buyer_id || null,
+              final_price: auction?.final_price || null,
+              data: payload,
+            });
+          } else {
+            this.broadcastToChannel(`auction:${auctionId}`, {
+              type: "auction_update",
+              data: payload,
+            });
+          }
         }
       )
       .on(
@@ -202,11 +226,56 @@ class WebSocketManager {
           table: "bids",
           filter: `auction_id=eq.${auctionId}`,
         },
-        (payload) => {
+        async (payload) => {
+          // Fetch bid ranking and buyer info
+          const { data: bidHistory } = await supabaseAdmin
+            .from("bid_history")
+            .select("rank_at_time")
+            .eq("bid_id", payload.new.id)
+            .eq("status_change", "placed")
+            .order("timestamp", { ascending: false })
+            .limit(1)
+            .single();
+
+          const { data: buyer } = await supabaseAdmin
+            .from("auth.users")
+            .select("id, email")
+            .eq("id", payload.new.bidder_id)
+            .single();
+
+          // PRD: new_bid event with buyer rank
           this.broadcastToChannel(`auction:${auctionId}`, {
-            type: "new_bid",
+            type: "new_bid", // PRD event type
+            bid_id: payload.new.id,
+            buyer_id: payload.new.bidder_id,
+            buyer_rank: bidHistory?.rank_at_time || null,
+            new_highest_bid: payload.new.amount,
             data: payload,
           });
+
+          // Check for outbid bids and notify
+          await this.notifyOutbidBids(auctionId, payload.new.id, payload.new.amount);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "bids",
+          filter: `auction_id=eq.${auctionId}`,
+        },
+        async (payload) => {
+          // Check if bid was withdrawn
+          if (payload.new.is_retracted && !payload.old.is_retracted) {
+            this.broadcastToChannel(`auction:${auctionId}`, {
+              type: "bid_withdrawn", // PRD event type
+              bid_id: payload.new.id,
+              old_bid_id: payload.new.id,
+              new_highest_bid: await this.getCurrentHighestBid(auctionId),
+              data: payload,
+            });
+          }
         }
       )
       .subscribe();
@@ -214,6 +283,65 @@ class WebSocketManager {
     // Store channel reference for cleanup
     (ws as any).supabaseChannels = (ws as any).supabaseChannels || [];
     (ws as any).supabaseChannels.push(channel);
+  }
+
+  /**
+   * Get current highest bid for an auction
+   */
+  private async getCurrentHighestBid(auctionId: string): Promise<number | null> {
+    const { data: auction } = await supabaseAdmin
+      .from("auctions")
+      .select("current_bid")
+      .eq("id", auctionId)
+      .single();
+
+    return auction?.current_bid || null;
+  }
+
+  /**
+   * Notify users whose bids were outbid
+   * PRD: Outbid notifications <10 sec
+   */
+  private async notifyOutbidBids(
+    auctionId: string,
+    newBidId: string,
+    newBidAmount: number
+  ): Promise<void> {
+    try {
+      // Get all bids that are now outbid (amount < new bid, not retracted, not the new bid)
+      const { data: outbidBids } = await supabaseAdmin
+        .from("bids")
+        .select("id, bidder_id, amount")
+        .eq("auction_id", auctionId)
+        .eq("is_retracted", false)
+        .neq("id", newBidId)
+        .lt("amount", newBidAmount);
+
+      if (!outbidBids || outbidBids.length === 0) {
+        return;
+      }
+
+      // Notify each outbid buyer
+      for (const bid of outbidBids) {
+        this.broadcastToChannel(`user:${bid.bidder_id}`, {
+          type: "outbid", // PRD: outbid alert
+          auction_id: auctionId,
+          bid_id: bid.id,
+          your_bid: bid.amount,
+          new_highest_bid: newBidAmount,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    } catch (error) {
+      logger.error(
+        {
+          error: error instanceof Error ? error.message : String(error),
+          auctionId,
+          newBidId,
+        },
+        "Failed to notify outbid bids"
+      );
+    }
   }
 
   /**
@@ -271,16 +399,82 @@ class WebSocketManager {
 
   /**
    * Broadcast message to all clients subscribed to a channel
+   * PRD: Ensures <2 second latency for bid updates
    */
   broadcastToChannel(channel: string, message: any): void {
     const subscribers = this.subscriptions.get(channel);
     if (!subscribers) return;
 
     const messageStr = JSON.stringify(message);
+    const startTime = Date.now();
+
     subscribers.forEach((ws) => {
       if (ws.readyState === WebSocket.OPEN) {
-        ws.send(messageStr);
+        try {
+          ws.send(messageStr);
+          const latency = Date.now() - startTime;
+          
+          // Log if latency exceeds PRD requirement (<2 sec)
+          if (latency > 2000) {
+            logger.warn(
+              { channel, latency, messageType: message.type },
+              "WebSocket broadcast latency exceeds PRD requirement"
+            );
+          }
+        } catch (error) {
+          logger.error(
+            {
+              error: error instanceof Error ? error.message : String(error),
+              channel,
+            },
+            "Failed to send WebSocket message"
+          );
+        }
       }
+    });
+  }
+
+  /**
+   * Broadcast new bid event (called from auction service)
+   * PRD: Public method for triggering new_bid events
+   */
+  async broadcastNewBid(
+    auctionId: string,
+    bidId: string,
+    buyerId: string,
+    buyerRank: number,
+    newHighestBid: number
+  ): Promise<void> {
+    this.broadcastToChannel(`auction:${auctionId}`, {
+      type: "new_bid",
+      bid_id: bidId,
+      buyer_id: buyerId,
+      buyer_rank: buyerRank,
+      new_highest_bid: newHighestBid,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Trigger outbid notifications
+    await this.notifyOutbidBids(auctionId, bidId, newHighestBid);
+  }
+
+  /**
+   * Broadcast auction closed event (called from auction service)
+   * PRD: Public method for triggering auction_closed events
+   */
+  broadcastAuctionClosed(
+    auctionId: string,
+    status: string,
+    winningBuyerId: string | null,
+    finalPrice: number | null
+  ): void {
+    this.broadcastToChannel(`auction:${auctionId}`, {
+      type: "auction_closed",
+      auction_id: auctionId,
+      status,
+      winning_buyer_id: winningBuyerId,
+      final_price: finalPrice,
+      timestamp: new Date().toISOString(),
     });
   }
 
