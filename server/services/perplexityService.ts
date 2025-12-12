@@ -164,7 +164,7 @@ function buildPriceQuery(filters?: {
  */
 export async function analyzeNewsSentiment(
   newsItems: Array<{ title: string; content: string; url: string }>
-): Promise<Array<PerplexityNewsItem & { sentiment_score: number; sentiment_label: string }>> {
+): Promise<Array<{ title: string; content: string; url: string; sentiment_score: number; sentiment_label: string }>> {
   const { apiKey, model, baseUrl } = getPerplexityConfig();
 
   try {

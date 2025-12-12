@@ -87,8 +87,8 @@ export async function createAuction(input: CreateAuctionInput): Promise<any> {
       },
       {
         description: `Create lots for auction`,
-        execute: async (results: any[]) => {
-          const auction = results[0];
+        execute: async (results?: any[]) => {
+          const auction = results?.[0];
           if (!auction?.id) throw new Error("Auction ID not available");
 
           const lotsToInsert = input.lots.map((lot) => ({
@@ -247,8 +247,8 @@ export async function placeBid(
       },
       {
         description: `Update auction current bid`,
-        execute: async (results: any[]) => {
-          const bid = results[0];
+        execute: async (results?: any[]) => {
+          const bid = results?.[0];
           if (!bid) throw new Error("Bid not available");
 
           const { data: updatedAuction, error } = await supabaseAdmin

@@ -140,8 +140,8 @@ export async function syncMarketNews(): Promise<void> {
       title: news.title,
       content: news.content,
       source_url: news.url,
-      source_name: news.source || "Unknown",
-      published_at: news.published_at || new Date().toISOString(),
+      source_name: (news as any).source || "Unknown",
+      published_at: (news as any).published_at || new Date().toISOString(),
       sentiment_score: news.sentiment_score,
       sentiment_label: news.sentiment_label,
       relevance_score: 50, // Default relevance

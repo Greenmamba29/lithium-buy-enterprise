@@ -230,8 +230,9 @@ export async function getContractById(contractId: string, userId: string): Promi
     throw new NotFoundError("Contract");
   }
 
-  // Verify access
-  if (contract.buyer_id !== userId && contract.supplier_id !== userId) {
+  // Verify access - cast to any to bypass Supabase parser type limitations
+  const contractData = contract as any;
+  if (contractData.buyer_id !== userId && contractData.supplier_id !== userId) {
     // Check if user is admin
     const { data: profile } = await supabaseAdmin
       .from("user_profiles")

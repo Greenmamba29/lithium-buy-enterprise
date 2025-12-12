@@ -204,7 +204,7 @@ export async function getAuctionMetrics(): Promise<{
   try {
     const { data: auctions, error: auctionError } = await supabaseAdmin
       .from("auctions")
-      .select("id, auction_type, status, current_bid, currency");
+      .select("id, auction_type, status, current_bid, starting_price, currency");
 
     if (auctionError) {
       throw new Error(`Failed to fetch auctions: ${auctionError.message}`);

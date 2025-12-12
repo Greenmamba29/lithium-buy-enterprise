@@ -1,4 +1,4 @@
-import { Queue, Worker } from "bullmq";
+import { Queue, Worker, type ConnectionOptions } from "bullmq";
 import { logger } from "../utils/logger.js";
 
 /**
@@ -10,41 +10,40 @@ if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN
   console.warn("Redis not configured. Job queue will not work.");
 }
 
+// Default connection options (localhost fallback)
+const defaultConnection: ConnectionOptions = {
+  host: "localhost",
+  port: 6379,
+};
+
+// Helper to get Redis connection options
+function getRedisConnection(): ConnectionOptions {
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    return {
+      host: process.env.UPSTASH_REDIS_REST_URL,
+      password: process.env.UPSTASH_REDIS_REST_TOKEN,
+    };
+  }
+  return defaultConnection;
+}
+
+const redisConnection = getRedisConnection();
+
 // Create queues
 export const emailQueue = new Queue("emails", {
-  connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? {
-        host: process.env.UPSTASH_REDIS_REST_URL,
-        password: process.env.UPSTASH_REDIS_REST_TOKEN,
-      }
-    : undefined,
+  connection: redisConnection,
 });
 
 export const dataSyncQueue = new Queue("data-sync", {
-  connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? {
-        host: process.env.UPSTASH_REDIS_REST_URL,
-        password: process.env.UPSTASH_REDIS_REST_TOKEN,
-      }
-    : undefined,
+  connection: redisConnection,
 });
 
 export const telebuyQueue = new Queue("telebuy", {
-  connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? {
-        host: process.env.UPSTASH_REDIS_REST_URL,
-        password: process.env.UPSTASH_REDIS_REST_TOKEN,
-      }
-    : undefined,
+  connection: redisConnection,
 });
 
 export const perplexityQueue = new Queue("perplexity", {
-  connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? {
-        host: process.env.UPSTASH_REDIS_REST_URL,
-        password: process.env.UPSTASH_REDIS_REST_TOKEN,
-      }
-    : undefined,
+  connection: redisConnection,
 });
 
 /**
@@ -59,12 +58,7 @@ export const emailWorker = new Worker(
     await sendEmailSync(job.data);
   },
   {
-    connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-      ? {
-          host: process.env.UPSTASH_REDIS_REST_URL,
-          password: process.env.UPSTASH_REDIS_REST_TOKEN,
-        }
-      : undefined,
+    connection: redisConnection,
   }
 );
 
@@ -78,12 +72,7 @@ export const dataSyncWorker = new Worker(
     // Data sync jobs can be added here as needed
   },
   {
-    connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-      ? {
-          host: process.env.UPSTASH_REDIS_REST_URL,
-          password: process.env.UPSTASH_REDIS_REST_TOKEN,
-        }
-      : undefined,
+    connection: redisConnection,
   }
 );
 
@@ -100,12 +89,7 @@ export const telebuyWorker = new Worker(
     }
   },
   {
-    connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-      ? {
-          host: process.env.UPSTASH_REDIS_REST_URL,
-          password: process.env.UPSTASH_REDIS_REST_TOKEN,
-        }
-      : undefined,
+    connection: redisConnection,
   }
 );
 
@@ -117,7 +101,7 @@ export const perplexityWorker = new Worker(
   async (job) => {
     logger.info({ source: "queue", jobId: job.id, jobName: job.name }, "Processing Perplexity job");
     const { syncPriceData, syncMarketNews, detectArbitrage, generateDailyBriefingJob, analyzeMarketTrends } = await import("./perplexityDataSync.js");
-    
+
     switch (job.name) {
       case "perplexity-price-sync":
         await syncPriceData();
@@ -139,12 +123,7 @@ export const perplexityWorker = new Worker(
     }
   },
   {
-    connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-      ? {
-          host: process.env.UPSTASH_REDIS_REST_URL,
-          password: process.env.UPSTASH_REDIS_REST_TOKEN,
-        }
-      : undefined,
+    connection: redisConnection,
   }
 );
 

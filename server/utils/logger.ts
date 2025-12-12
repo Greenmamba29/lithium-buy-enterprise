@@ -9,8 +9,8 @@ import { join } from "path";
 
 const isDevelopment = process.env.NODE_ENV === "development";
 
-// Log aggregation targets
-const transports: pino.TransportMultiOptions["targets"] = [];
+// Log aggregation targets - use mutable array type
+const transports: Array<pino.TransportTargetOptions> = [];
 
 // Development: Pretty console output
 if (isDevelopment) {

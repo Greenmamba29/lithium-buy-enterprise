@@ -231,7 +231,7 @@ export default function Home() {
                         supplier={supplier as any}
                         isSelected={compareIds.includes(supplier.id)}
                         onCompareToggle={handleCompareToggle}
-                        onQuickView={setQuickViewSupplier}
+                        onQuickView={(s) => setQuickViewSupplier(s as any)}
                       />
                     </div>
                   ))}
@@ -273,20 +273,20 @@ export default function Home() {
       </div>
 
       <CompareBar
-        suppliers={compareSuppliers}
+        suppliers={compareSuppliers as any}
         onRemove={(id) => setCompareIds((prev) => prev.filter((i) => i !== id))}
         onCompare={() => setShowComparison(true)}
         onClear={() => setCompareIds([])}
       />
 
       <QuickViewModal
-        supplier={quickViewSupplier}
+        supplier={quickViewSupplier as any}
         open={!!quickViewSupplier}
         onClose={() => setQuickViewSupplier(null)}
       />
 
       <ComparisonTable
-        suppliers={compareSuppliers}
+        suppliers={compareSuppliers as any}
         open={showComparison}
         onClose={() => setShowComparison(false)}
       />

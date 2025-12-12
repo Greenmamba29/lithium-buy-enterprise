@@ -106,6 +106,9 @@ export async function orchestrateTelebuyFlow(
   const scheduledDate = new Date(data.scheduled_at);
   const endDate = new Date(scheduledDate.getTime() + 60 * 60 * 1000); // 1 hour duration
 
+  // Extract supplier email before using it
+  const supplierEmail = (supplier as any).supplier_profiles?.[0]?.contact_email;
+
   const calendarEvent = {
     title: `TELEBUY Session: ${supplier.name}`,
     description: `Video call session with ${supplier.name} via LithiumBuy TELEBUY.\n\nMeeting URL: ${meetingRoom.url}`,
@@ -148,7 +151,6 @@ export async function orchestrateTelebuyFlow(
   }
 
   // 6. Send notification emails
-  const supplierEmail = (supplier as any).supplier_profiles?.[0]?.contact_email;
   if (supplierEmail) {
     try {
       await sendEmail({

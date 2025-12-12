@@ -141,26 +141,20 @@ export function sentryErrorHandler(err: any, req: any, res: any, next: any) {
 
 /**
  * Express request handler middleware
+ * Note: In @sentry/node v8+, request handling is automatic via the init() integrations
  */
 export function sentryRequestHandler(req: any, res: any, next: any) {
-  if (sentryInitialized) {
-    import("@sentry/node").then((Sentry) => {
-      Sentry.Handlers.requestHandler()(req, res, next);
-    });
-  } else {
-    next();
-  }
+  // In Sentry v8+, request handling is done automatically via integrations
+  // This middleware is kept for compatibility but just passes through
+  next();
 }
 
 /**
  * Express tracing handler middleware
+ * Note: In @sentry/node v8+, tracing is automatic via the init() integrations
  */
 export function sentryTracingHandler(req: any, res: any, next: any) {
-  if (sentryInitialized) {
-    import("@sentry/node").then((Sentry) => {
-      Sentry.Handlers.tracingHandler()(req, res, next);
-    });
-  } else {
-    next();
-  }
+  // In Sentry v8+, tracing is done automatically via integrations
+  // This middleware is kept for compatibility but just passes through
+  next();
 }

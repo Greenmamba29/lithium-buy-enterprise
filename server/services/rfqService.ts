@@ -151,8 +151,9 @@ export async function getRFQById(rfqId: string, userId?: string): Promise<any> {
     throw new NotFoundError("RFQ");
   }
 
-  // Check access permissions
-  if (rfq.status === "draft" && rfq.buyer_id !== userId) {
+  // Check access permissions - cast to any to bypass Supabase parser type limitations
+  const rfqData = rfq as any;
+  if (rfqData.status === "draft" && rfqData.buyer_id !== userId) {
     throw new ValidationError("Access denied");
   }
 
