@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { supabaseAdmin } from "../../db/client.js";
 import { executeTransaction } from "../../utils/transactions.js";
 
@@ -9,11 +9,29 @@ import { executeTransaction } from "../../utils/transactions.js";
 
 describe("Supplier Creation Flow", () => {
   let testSupplierId: string | null = null;
-  let testUserId: string | null = null;
+  const testUserId: string | null = null;
 
   beforeEach(async () => {
-    // Create a test user for testing
-    // In a real test, you'd use a test database or cleanup after
+    vi.restoreAllMocks();
+
+    vi.spyOn(supabaseAdmin, "from").mockImplementation((table) => {
+      return {
+        insert: (payload: any) => ({
+          select: () => ({
+            single: async () => {
+              const id = payload?.id ?? `${table}-id`;
+              const data = { id, ...payload };
+              return { data, error: null } as any;
+            },
+          }),
+        }),
+        delete: () => ({ eq: async () => ({ error: null }) }),
+        select: () => ({
+          eq: () => ({ single: async () => ({ data: null, error: null }) }),
+        }),
+        eq: () => ({ single: async () => ({ data: null, error: null }) }),
+      } as any;
+    });
   });
 
   afterEach(async () => {

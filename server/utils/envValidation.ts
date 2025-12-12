@@ -9,6 +9,26 @@ interface EnvVar {
   description: string;
 }
 
+function hydrateSupabaseEnv() {
+  // Netlify exposes Supabase URL to the client as VITE_SUPABASE_URL; mirror it for the server when missing.
+  if (!process.env.SUPABASE_URL && process.env.VITE_SUPABASE_URL) {
+    process.env.SUPABASE_URL = process.env.VITE_SUPABASE_URL;
+  }
+
+  // In CI/test runs we still want the process to boot even if secrets are not provided.
+  if (process.env.NODE_ENV === "test") {
+    if (!process.env.SUPABASE_URL) {
+      process.env.SUPABASE_URL = "https://example.supabase.test";
+      console.warn("Using placeholder SUPABASE_URL for tests; set a real value if needed.");
+    }
+
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-role-key";
+      console.warn("Using placeholder SUPABASE_SERVICE_ROLE_KEY for tests; set a real value if needed.");
+    }
+  }
+}
+
 const requiredEnvVars: EnvVar[] = [
   // Supabase
   { name: "SUPABASE_URL", required: true, description: "Supabase project URL" },
@@ -76,6 +96,8 @@ function isValidEmail(email: string): boolean {
  * Throws error if required variables are missing
  */
 export function validateEnvironment(): void {
+  hydrateSupabaseEnv();
+
   const missing: string[] = [];
   const warnings: string[] = [];
   const formatErrors: string[] = [];
