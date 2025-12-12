@@ -9,7 +9,7 @@ import { executeTransaction } from "../../utils/transactions.js";
 
 describe("Supplier Creation Flow", () => {
   let testSupplierId: string | null = null;
-  let testUserId: string | null = null;
+  const testUserId: string | null = null;
 
   beforeEach(async () => {
     // Create a test user for testing
