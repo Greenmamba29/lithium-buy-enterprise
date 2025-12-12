@@ -77,3 +77,12 @@ echo "   4. Push: git push"
 echo ""
 echo "This will trigger a new Netlify build with the correct dependencies."
 
+
+
+
+
+
+
+
+
+

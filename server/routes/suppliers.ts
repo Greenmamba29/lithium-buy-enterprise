@@ -73,8 +73,16 @@ export const getSuppliers = asyncHandler(async (req: Request, res: Response) => 
     throw new ValidationError(`Failed to fetch suppliers: ${error.message}`);
   }
 
+  // Normalize response: convert null relations to empty arrays for frontend compatibility
+  let filteredData = (data || []).map((supplier: any) => ({
+    ...supplier,
+    supplier_profiles: supplier.supplier_profiles || [],
+    locations: supplier.locations || [],
+    products: supplier.products || [],
+    certifications: supplier.certifications || [],
+  }));
+
   // Filter by product type and purity if specified
-  let filteredData = data || [];
   if (query.productType || query.purityLevel) {
     filteredData = filteredData.filter((supplier: any) => {
       const products = supplier.products || [];

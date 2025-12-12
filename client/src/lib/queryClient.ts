@@ -7,6 +7,20 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+/**
+ * Get the API base URL from environment variable or default to relative path
+ * Supports Render + Netlify split deployment
+ */
+function getApiBaseUrl(): string {
+  // In production (Netlify), use VITE_API_BASE_URL if set (points to Render backend)
+  // In development, default to relative path (same origin)
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  // Default to relative path for same-origin requests
+  return "";
+}
+
 export async function apiRequest(
   method: string,
   url: string,
@@ -26,7 +40,10 @@ export async function apiRequest(
     // Ignore if auth not available
   }
 
-  const res = await fetch(url, {
+  // Prepend API base URL if URL doesn't already start with http
+  const fullUrl = url.startsWith("http") ? url : `${getApiBaseUrl()}${url}`;
+
+  const res = await fetch(fullUrl, {
     method,
     headers,
     body: data ? JSON.stringify(data) : undefined,
@@ -43,7 +60,11 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey, signal }) => {
-    const res = await fetch(queryKey.join("/") as string, {
+    const url = queryKey.join("/") as string;
+    // Prepend API base URL if URL doesn't already start with http
+    const fullUrl = url.startsWith("http") ? url : `${getApiBaseUrl()}${url}`;
+    
+    const res = await fetch(fullUrl, {
       credentials: "include",
       signal, // AbortController signal for request cancellation
     });
