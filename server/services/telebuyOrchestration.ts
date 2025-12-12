@@ -50,6 +50,9 @@ export async function orchestrateTelebuyFlow(
     throw new Error("Supplier or user not found");
   }
 
+  // Extract supplier email from profile
+  const supplierEmail = (supplier as any).supplier_profiles?.[0]?.contact_email;
+
   // 2. Create meeting room
   const meetingRoom = await createMeetingRoom({
     name: `telebuy-${supplier.name.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`,
@@ -148,7 +151,6 @@ export async function orchestrateTelebuyFlow(
   }
 
   // 6. Send notification emails
-  const supplierEmail = (supplier as any).supplier_profiles?.[0]?.contact_email;
   if (supplierEmail) {
     try {
       await sendEmail({

@@ -176,11 +176,65 @@ export async function readinessCheck(_req: Request, res: Response) {
 }
 
 /**
+ * Database health check endpoint
+ * Returns database connectivity status
+ */
+export async function dbHealthCheck(_req: Request, res: Response) {
+  const dbStatus = await checkDatabase();
+  const statusCode = dbStatus.status === "healthy" ? 200 : 503;
+  
+  res.status(statusCode).json({
+    status: dbStatus.status,
+    timestamp: new Date().toISOString(),
+    database: dbStatus,
+  });
+}
+
+/**
+ * Full health check endpoint
+ * Returns comprehensive health status for all dependencies
+ */
+export async function fullHealthCheck(_req: Request, res: Response) {
+  try {
+    const [database, redis, externalAPIs] = await Promise.all([
+      checkDatabase(),
+      checkRedis(),
+      checkExternalAPIs(),
+    ]);
+
+    const isHealthy = database.status === "healthy";
+
+    const statusCode = isHealthy ? 200 : 503;
+    const performance = getPerformanceSummary();
+
+    res.status(statusCode).json({
+      status: isHealthy ? "healthy" : "unhealthy",
+      timestamp: new Date().toISOString(),
+      service: "lithiumbuy-api",
+      dependencies: {
+        database,
+        redis,
+        external_apis: externalAPIs,
+      },
+      performance,
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: "unhealthy",
+      error: error instanceof Error ? error.message : "Unknown error",
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+
+/**
  * Register health check routes
  */
 export function registerHealthRoutes(app: Express) {
   app.get("/health", healthCheck);
   app.get("/ready", readinessCheck);
+  app.get("/api/health/db", dbHealthCheck);
+  app.get("/api/health/full", fullHealthCheck);
 }
 
 

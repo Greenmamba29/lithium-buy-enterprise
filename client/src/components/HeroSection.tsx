@@ -133,7 +133,8 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
                 <Button 
                   variant="outline"
                   size="lg"
-                  className="h-14 px-10 border-stone-600 text-stone-200 hover:bg-stone-800 hover:border-gold/50 hover:-translate-y-1 transition-all duration-500"
+                  className="h-14 px-10 font-semibold border-stone-600 text-white bg-[#1d1b1b] hover:bg-stone-800 hover:border-gold/50 hover:-translate-y-1 transition-all duration-500"
+                  style={{ backgroundClip: 'unset', WebkitBackgroundClip: 'unset' }}
                   data-testid="button-ai-studio"
                 >
                   AI Studio

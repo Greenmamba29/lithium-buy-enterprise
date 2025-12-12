@@ -12,6 +12,7 @@ import { registerPerplexityRoutes } from "./routes/perplexity.js";
 import { registerAuctionRoutes } from "./routes/auctions.js";
 import { registerRFQRoutes } from "./routes/rfq.js";
 import { registerContentRoutes } from "./routes/content.js";
+import { registerKYCRoutes } from "./routes/kyc.js";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -32,6 +33,7 @@ export async function registerRoutes(
   registerAuctionRoutes(app);
   registerRFQRoutes(app);
   registerContentRoutes(app);
+  registerKYCRoutes(app);
 
   return httpServer;
 }

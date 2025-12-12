@@ -113,3 +113,12 @@ Install Node.js with npm:
 - `scripts/fix-netlify-lockfile.sh` - Helper script to generate lockfile
 - `.github/workflows/ci.yml` - CI uses `npm ci` which requires lockfile
 
+
+
+
+
+
+
+
+
+

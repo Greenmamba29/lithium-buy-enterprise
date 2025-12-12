@@ -1,4 +1,4 @@
-import { Queue, Worker } from "bullmq";
+import { Queue, Worker, type ConnectionOptions } from "bullmq";
 import { logger } from "../utils/logger.js";
 
 /**
@@ -10,41 +10,32 @@ if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN
   console.warn("Redis not configured. Job queue will not work.");
 }
 
+// Helper to create connection options
+function getConnectionOptions(): ConnectionOptions | undefined {
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    return undefined;
+  }
+  return {
+    host: process.env.UPSTASH_REDIS_REST_URL,
+    password: process.env.UPSTASH_REDIS_REST_TOKEN,
+  } as ConnectionOptions;
+}
+
 // Create queues
 export const emailQueue = new Queue("emails", {
-  connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? {
-        host: process.env.UPSTASH_REDIS_REST_URL,
-        password: process.env.UPSTASH_REDIS_REST_TOKEN,
-      }
-    : undefined,
+  connection: getConnectionOptions(),
 });
 
 export const dataSyncQueue = new Queue("data-sync", {
-  connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? {
-        host: process.env.UPSTASH_REDIS_REST_URL,
-        password: process.env.UPSTASH_REDIS_REST_TOKEN,
-      }
-    : undefined,
+  connection: getConnectionOptions(),
 });
 
 export const telebuyQueue = new Queue("telebuy", {
-  connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? {
-        host: process.env.UPSTASH_REDIS_REST_URL,
-        password: process.env.UPSTASH_REDIS_REST_TOKEN,
-      }
-    : undefined,
+  connection: getConnectionOptions(),
 });
 
 export const perplexityQueue = new Queue("perplexity", {
-  connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? {
-        host: process.env.UPSTASH_REDIS_REST_URL,
-        password: process.env.UPSTASH_REDIS_REST_TOKEN,
-      }
-    : undefined,
+  connection: getConnectionOptions(),
 });
 
 /**
@@ -78,12 +69,7 @@ export const dataSyncWorker = new Worker(
     // Data sync jobs can be added here as needed
   },
   {
-    connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-      ? {
-          host: process.env.UPSTASH_REDIS_REST_URL,
-          password: process.env.UPSTASH_REDIS_REST_TOKEN,
-        }
-      : undefined,
+    connection: getConnectionOptions(),
   }
 );
 
@@ -139,12 +125,7 @@ export const perplexityWorker = new Worker(
     }
   },
   {
-    connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-      ? {
-          host: process.env.UPSTASH_REDIS_REST_URL,
-          password: process.env.UPSTASH_REDIS_REST_TOKEN,
-        }
-      : undefined,
+    connection: getConnectionOptions(),
   }
 );
 

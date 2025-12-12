@@ -26,7 +26,7 @@ jobs:
         run: npm run check
 
       - name: Run tests
-        run: npm test
+        run: npm test -- --run
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
@@ -50,7 +50,8 @@ jobs:
         run: npm ci
 
       - name: Run ESLint
-        run: npm run lint || echo "Linting not configured yet"
+        run: npm run lint
+        continue-on-error: false
 
   build:
     runs-on: ubuntu-latest
@@ -72,8 +73,21 @@ jobs:
 
       - name: Check build artifacts
         run: |
-          test -d dist || exit 1
-          test -d dist/public || exit 1
+          if [ ! -d "dist" ]; then
+            echo "Error: dist directory not found"
+            exit 1
+          fi
+          if [ ! -d "dist/public" ]; then
+            echo "Error: dist/public directory not found"
+            exit 1
+          fi
+          if [ ! -f "dist/index.cjs" ]; then
+            echo "Error: dist/index.cjs not found"
+            exit 1
+          fi
+          echo "Build artifacts verified successfully"
+          ls -la dist/
+          ls -la dist/public/ | head -20
 
 
 

@@ -7,6 +7,7 @@ import { setupRateLimiting } from "./middleware/rateLimit.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import { requestLogger } from "./middleware/logging.js";
 import { websocketManager } from "./services/websocketService.js";
+import { auctionMonitor } from "./services/realtimeAuctionMonitor.js";
 import { validateEnvironment } from "./utils/envValidation.js";
 import { initSentry, sentryRequestHandler, sentryTracingHandler, sentryErrorHandler } from "./utils/sentry.js";
 import { metricsMiddleware } from "./utils/monitoring.js";
@@ -100,6 +101,10 @@ app.use((req, res, next) => {
 
   // Initialize WebSocket server
   websocketManager.initialize(httpServer);
+
+  // Start real-time auction monitor (PRD: auto-close auctions at scheduled_end)
+  auctionMonitor.start();
+  log("Auction monitor started");
 
   await registerRoutes(httpServer, app);
 

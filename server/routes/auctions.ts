@@ -19,6 +19,12 @@ import {
   getEscrowById,
 } from "../services/escrowService.js";
 import {
+  addToWatchlist,
+  removeFromWatchlist,
+  getWatchlist,
+  isWatched,
+} from "../services/watchlistService.js";
+import {
   createLogisticsOption,
   bookLogistics,
   updateLogisticsStatus,
@@ -81,16 +87,40 @@ export const createAuctionRoute = asyncHandler(async (req: Request, res: Respons
 
 /**
  * GET /api/auctions
- * List active auctions
+ * List active auctions with PRD filters
  */
 export const listAuctions = asyncHandler(async (req: Request, res: Response) => {
-  const auction_type = req.query.auction_type as string | undefined;
-  const product_type = req.query.product_type as string | undefined;
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 20;
   const offset = (page - 1) * limit;
 
+  // PRD filters
+  const material_type = req.query.material_type as string | undefined;
+  const grade = req.query.grade as string | undefined;
+  const delivery_terms = req.query.delivery_terms as string | undefined;
+  const price_min = req.query.price_min ? parseFloat(req.query.price_min as string) : undefined;
+  const price_max = req.query.price_max ? parseFloat(req.query.price_max as string) : undefined;
+  const time_remaining = req.query.time_remaining as string | undefined;
+  const seller_rating = req.query.seller_rating ? parseFloat(req.query.seller_rating as string) : undefined;
+  const sort_by = req.query.sort_by as "price" | "time_remaining" | "created_at" | undefined;
+  const sort_order = req.query.sort_order as "asc" | "desc" | undefined;
+
+  // Legacy filters (backward compatibility)
+  const auction_type = req.query.auction_type as string | undefined;
+  const product_type = req.query.product_type as string | undefined;
+
   const result = await listActiveAuctions({
+    // PRD filters
+    material_type,
+    grade,
+    delivery_terms,
+    price_min,
+    price_max,
+    time_remaining,
+    seller_rating,
+    sort_by,
+    sort_order,
+    // Legacy filters
     auction_type,
     product_type,
     limit,
@@ -369,6 +399,69 @@ export const getProviders = asyncHandler(async (req: Request, res: Response) => 
 });
 
 /**
+ * POST /api/auctions/:id/watchlist
+ * Add auction to watchlist
+ */
+export const addToWatchlistRoute = asyncHandler(async (req: Request, res: Response) => {
+  const userId = (req as any).user?.id;
+  const auctionId = req.params.id;
+
+  if (!userId) {
+    throw new AuthorizationError("Authentication required");
+  }
+
+  const result = await addToWatchlist(userId, auctionId);
+  res.json({ data: result });
+});
+
+/**
+ * DELETE /api/auctions/:id/watchlist
+ * Remove auction from watchlist
+ */
+export const removeFromWatchlistRoute = asyncHandler(async (req: Request, res: Response) => {
+  const userId = (req as any).user?.id;
+  const auctionId = req.params.id;
+
+  if (!userId) {
+    throw new AuthorizationError("Authentication required");
+  }
+
+  await removeFromWatchlist(userId, auctionId);
+  res.json({ success: true });
+});
+
+/**
+ * GET /api/watchlist
+ * Get user's watchlist
+ */
+export const getWatchlistRoute = asyncHandler(async (req: Request, res: Response) => {
+  const userId = (req as any).user?.id;
+
+  if (!userId) {
+    throw new AuthorizationError("Authentication required");
+  }
+
+  const watchlist = await getWatchlist(userId);
+  res.json({ data: watchlist });
+});
+
+/**
+ * GET /api/auctions/:id/watchlist
+ * Check if auction is in watchlist
+ */
+export const checkWatchlistRoute = asyncHandler(async (req: Request, res: Response) => {
+  const userId = (req as any).user?.id;
+  const auctionId = req.params.id;
+
+  if (!userId) {
+    throw new AuthorizationError("Authentication required");
+  }
+
+  const isWatchedResult = await isWatched(userId, auctionId);
+  res.json({ is_watched: isWatchedResult });
+});
+
+/**
  * Register auction routes
  */
 export function registerAuctionRoutes(app: Express) {
@@ -378,6 +471,12 @@ export function registerAuctionRoutes(app: Express) {
   app.post("/api/auctions/:id/bid", requireAuth, placeBidRoute);
   app.post("/api/auctions/:id/end", requireAuth, endAuctionRoute);
   app.post("/api/auctions/:id/status", requireAuth, updateStatus);
+
+  // Watchlist routes
+  app.post("/api/auctions/:id/watchlist", requireAuth, addToWatchlistRoute);
+  app.delete("/api/auctions/:id/watchlist", requireAuth, removeFromWatchlistRoute);
+  app.get("/api/watchlist", requireAuth, getWatchlistRoute);
+  app.get("/api/auctions/:id/watchlist", requireAuth, checkWatchlistRoute);
 
   app.post("/api/escrow", requireAuth, createEscrow);
   app.post("/api/escrow/:id/fund", requireAuth, fundEscrowRoute);
