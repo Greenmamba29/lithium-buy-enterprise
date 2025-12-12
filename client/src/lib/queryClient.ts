@@ -1,5 +1,14 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
+/**
+ * Get the API base URL from environment variables
+ * In production (Netlify), this points to the Render backend
+ * In development, this is empty (same-origin) or localhost:5000
+ */
+function getApiBaseUrl(): string {
+  return import.meta.env.VITE_API_BASE_URL || "";
+}
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
@@ -14,7 +23,7 @@ export async function apiRequest(
 ): Promise<Response> {
   // Get auth token if available
   let headers: HeadersInit = data ? { "Content-Type": "application/json" } : {};
-  
+
   // Try to get auth token (will be null if not logged in)
   try {
     const { getAuthToken } = await import("@/hooks/useAuth");
@@ -26,7 +35,11 @@ export async function apiRequest(
     // Ignore if auth not available
   }
 
-  const res = await fetch(url, {
+  // Prepend base URL for API requests (supports Render + Netlify split deployment)
+  const base = getApiBaseUrl();
+  const fullUrl = base + url;
+
+  const res = await fetch(fullUrl, {
     method,
     headers,
     body: data ? JSON.stringify(data) : undefined,
@@ -43,7 +56,12 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey, signal }) => {
-    const res = await fetch(queryKey.join("/") as string, {
+    // Prepend base URL for API requests (supports Render + Netlify split deployment)
+    const base = getApiBaseUrl();
+    const url = queryKey.join("/") as string;
+    const fullUrl = base + url;
+
+    const res = await fetch(fullUrl, {
       credentials: "include",
       signal, // AbortController signal for request cancellation
     });
