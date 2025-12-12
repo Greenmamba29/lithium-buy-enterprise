@@ -3,32 +3,26 @@ import { getSuppliers } from '../suppliers';
 import type { Request, Response } from 'express';
 
 // Mock Supabase
-vi.mock('../../db/client', () => ({
-  supabaseAdmin: {
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          order: vi.fn(() => ({
-            range: vi.fn(() => ({
-              data: [],
-              error: null,
-              count: 0,
-            })),
-          })),
-        })),
-        ilike: vi.fn(() => ({
-          order: vi.fn(() => ({
-            range: vi.fn(() => ({
-              data: [],
-              error: null,
-              count: 0,
-            })),
-          })),
-        })),
-      })),
-    })),
-  },
-}));
+vi.mock('../../db/client.js', () => {
+  const createBuilder = () => {
+    const builder: any = {
+      order: vi.fn(() => builder),
+      range: vi.fn(async () => ({ data: [], error: null, count: 0 })),
+      eq: vi.fn(() => builder),
+      ilike: vi.fn(() => builder),
+    };
+
+    builder.select = vi.fn(() => builder);
+
+    return builder;
+  };
+
+  return {
+    supabaseAdmin: {
+      from: vi.fn(() => createBuilder()),
+    },
+  };
+});
 
 describe('Supplier Routes', () => {
   let mockReq: Partial<Request>;
@@ -46,7 +40,14 @@ describe('Supplier Routes', () => {
   });
 
   it('should return suppliers with pagination', async () => {
-    await getSuppliers(mockReq as Request, mockRes as Response);
+    await new Promise((resolve, reject) => {
+      (mockRes as any).json = vi.fn((payload: any) => {
+        resolve(payload);
+        return payload;
+      });
+
+      getSuppliers(mockReq as Request, mockRes as Response, reject);
+    });
 
     expect(mockRes.json).toHaveBeenCalled();
     const call = (mockRes.json as any).mock.calls[0][0];
