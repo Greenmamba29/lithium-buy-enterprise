@@ -87,8 +87,8 @@ export async function createAuction(input: CreateAuctionInput): Promise<any> {
       },
       {
         description: `Create lots for auction`,
-        execute: async (results: any[]) => {
-          const auction = results[0];
+        execute: async (results?: any[]) => {
+          const auction = results?.[0];
           if (!auction?.id) throw new Error("Auction ID not available");
 
           const lotsToInsert = input.lots.map((lot) => ({
@@ -247,8 +247,8 @@ export async function placeBid(
       },
       {
         description: `Update auction current bid`,
-        execute: async (results: any[]) => {
-          const bid = results[0];
+        execute: async (results?: any[]) => {
+          const bid = results?.[0];
           if (!bid) throw new Error("Bid not available");
 
           const { data: updatedAuction, error } = await supabaseAdmin
@@ -314,13 +314,30 @@ export async function getAuctionById(auctionId: string): Promise<any> {
     .select(`
       *,
       auction_lots(*),
-      bids(*, bidder:auth.users(id, email))
+      bids(*)
     `)
     .eq("id", auctionId)
     .single();
 
   if (error || !auction) {
     throw new NotFoundError("Auction");
+  }
+
+  // Fetch bidder profiles separately for proper join
+  if (auction.bids && auction.bids.length > 0) {
+    const bidderIds = Array.from(new Set(auction.bids.map((bid: any) => bid.bidder_id)));
+
+    const { data: profiles } = await supabaseAdmin
+      .from("user_profiles")
+      .select("user_id, company_name")
+      .in("user_id", bidderIds);
+
+    const profileMap = new Map(profiles?.map((p: any) => [p.user_id, p]) || []);
+
+    auction.bids = auction.bids.map((bid: any) => ({
+      ...bid,
+      bidder: profileMap.get(bid.bidder_id) || { user_id: bid.bidder_id, company_name: "Anonymous Bidder" },
+    }));
   }
 
   return auction;

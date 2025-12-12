@@ -147,7 +147,7 @@ export default function AuctionDetail() {
                         >
                           <div>
                             <span className="font-semibold">
-                              {bid.bidder?.email || "Anonymous"}
+                              {bid.bidder?.company_name || "Anonymous Bidder"}
                             </span>
                             {bid.is_winning && (
                               <Badge className="ml-2 bg-green-500">Winning</Badge>
