@@ -46,6 +46,18 @@ export async function createMeetingRoom(
 
   return dailyCircuitBreaker.execute(async () => {
     try {
+      const defaultExpiry =
+        config.properties?.exp ?? Math.floor(Date.now() / 1000) + 24 * 60 * 60;
+      const properties = {
+        ...config.properties,
+        enable_screenshare: config.properties?.enable_screenshare ?? true,
+        enable_recording: config.properties?.enable_recording ?? false,
+        enable_chat: config.properties?.enable_chat ?? true,
+        exp: config.properties?.exp ?? defaultExpiry,
+      };
+
+      const requestConfig = { ...config, properties };
+
       const response = await fetch("https://api.daily.co/v1/rooms", {
         method: "POST",
         headers: {
@@ -55,15 +67,7 @@ export async function createMeetingRoom(
         body: JSON.stringify({
           name: config.name || `telebuy-${Date.now()}`,
           privacy: config.privacy,
-          properties: {
-            enable_screenshare: true,
-            enable_recording: config.properties?.enable_recording || false,
-            enable_chat: true,
-            exp:
-              config.properties?.exp ||
-              Math.floor(Date.now() / 1000) + 24 * 60 * 60, // 24 hours default
-            ...config.properties,
-          },
+          properties,
         }),
       });
 
@@ -82,9 +86,8 @@ export async function createMeetingRoom(
         id: (room as any).id || "",
         name: (room as any).name || (config.name ?? ""),
         url: (room as any).url || "",
-        config,
-        created_at:
-          (room as any).config?.created_at || new Date().toISOString(),
+        config: requestConfig,
+        created_at: (room as any).created_at || new Date().toISOString(),
       };
     } catch (error) {
       if (error instanceof CircuitBreakerError) {
@@ -141,8 +144,7 @@ export async function getMeetingRoom(
         name: (room as any).name || roomName,
         url: (room as any).url || "",
         config: (room as any).config || {},
-        created_at:
-          (room as any).config?.created_at || new Date().toISOString(),
+        created_at: (room as any).created_at || new Date().toISOString(),
       };
     } catch (error) {
       if (error instanceof CircuitBreakerError) {
