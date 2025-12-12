@@ -25,6 +25,13 @@ export type TelebuyStatus = 'scheduled' | 'in-progress' | 'completed' | 'cancell
 export type DocumentType = 'contract' | 'quote' | 'notes' | 'other';
 export type UserRole = 'buyer' | 'supplier' | 'admin';
 
+// Auction types
+export type AuctionType = 'english' | 'dutch' | 'sealed_bid' | 'reverse';
+export type AuctionStatus = 'draft' | 'scheduled' | 'live' | 'ended' | 'cancelled';
+export type EscrowStatus = 'pending' | 'funded' | 'released' | 'refunded' | 'disputed';
+export type LogisticsStatus = 'pending' | 'booked' | 'in_transit' | 'delivered' | 'cancelled';
+export type ServiceType = 'standard' | 'express' | 'overnight' | 'custom';
+
 export interface Database {
   public: {
     Tables: {
@@ -460,6 +467,265 @@ export interface Database {
           phone?: string | null;
           role?: UserRole;
           preferences?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      auctions: {
+        Row: {
+          id: string;
+          seller_id: string;
+          title: string;
+          description: string | null;
+          auction_type: AuctionType;
+          status: AuctionStatus;
+          start_time: string;
+          end_time: string;
+          reserve_price: number | null;
+          starting_price: number;
+          currency: string;
+          bid_increment: number;
+          current_bid: number | null;
+          winner_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          seller_id: string;
+          title: string;
+          description?: string | null;
+          auction_type: AuctionType;
+          status?: AuctionStatus;
+          start_time: string;
+          end_time: string;
+          reserve_price?: number | null;
+          starting_price: number;
+          currency?: string;
+          bid_increment?: number;
+          current_bid?: number | null;
+          winner_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          seller_id?: string;
+          title?: string;
+          description?: string | null;
+          auction_type?: AuctionType;
+          status?: AuctionStatus;
+          start_time?: string;
+          end_time?: string;
+          reserve_price?: number | null;
+          starting_price?: number;
+          currency?: string;
+          bid_increment?: number;
+          current_bid?: number | null;
+          winner_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      auction_lots: {
+        Row: {
+          id: string;
+          auction_id: string;
+          product_id: string | null;
+          lot_number: number;
+          title: string;
+          description: string | null;
+          quantity: number;
+          unit: string;
+          product_type: ProductType | null;
+          purity_level: PurityLevel | null;
+          location_country: string | null;
+          location_city: string | null;
+          certification_required: boolean;
+          min_purity_required: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          auction_id: string;
+          product_id?: string | null;
+          lot_number: number;
+          title: string;
+          description?: string | null;
+          quantity: number;
+          unit?: string;
+          product_type?: ProductType | null;
+          purity_level?: PurityLevel | null;
+          location_country?: string | null;
+          location_city?: string | null;
+          certification_required?: boolean;
+          min_purity_required?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          auction_id?: string;
+          product_id?: string | null;
+          lot_number?: number;
+          title?: string;
+          description?: string | null;
+          quantity?: number;
+          unit?: string;
+          product_type?: ProductType | null;
+          purity_level?: PurityLevel | null;
+          location_country?: string | null;
+          location_city?: string | null;
+          certification_required?: boolean;
+          min_purity_required?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      bids: {
+        Row: {
+          id: string;
+          auction_id: string;
+          lot_id: string | null;
+          bidder_id: string;
+          amount: number;
+          currency: string;
+          is_winning: boolean;
+          is_retracted: boolean;
+          retracted_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          auction_id: string;
+          lot_id?: string | null;
+          bidder_id: string;
+          amount: number;
+          currency?: string;
+          is_winning?: boolean;
+          is_retracted?: boolean;
+          retracted_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          auction_id?: string;
+          lot_id?: string | null;
+          bidder_id?: string;
+          amount?: number;
+          currency?: string;
+          is_winning?: boolean;
+          is_retracted?: boolean;
+          retracted_at?: string | null;
+          created_at?: string;
+        };
+      };
+      escrow_accounts: {
+        Row: {
+          id: string;
+          auction_id: string | null;
+          order_id: string | null;
+          buyer_id: string;
+          seller_id: string;
+          amount: number;
+          currency: string;
+          status: EscrowStatus;
+          stripe_payment_intent_id: string | null;
+          stripe_charge_id: string | null;
+          funded_at: string | null;
+          released_at: string | null;
+          refunded_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          auction_id?: string | null;
+          order_id?: string | null;
+          buyer_id: string;
+          seller_id: string;
+          amount: number;
+          currency?: string;
+          status?: EscrowStatus;
+          stripe_payment_intent_id?: string | null;
+          stripe_charge_id?: string | null;
+          funded_at?: string | null;
+          released_at?: string | null;
+          refunded_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          auction_id?: string | null;
+          order_id?: string | null;
+          buyer_id?: string;
+          seller_id?: string;
+          amount?: number;
+          currency?: string;
+          status?: EscrowStatus;
+          stripe_payment_intent_id?: string | null;
+          stripe_charge_id?: string | null;
+          funded_at?: string | null;
+          released_at?: string | null;
+          refunded_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      logistics_options: {
+        Row: {
+          id: string;
+          auction_id: string | null;
+          order_id: string | null;
+          provider_name: string;
+          service_type: ServiceType;
+          estimated_days: number | null;
+          cost: number;
+          currency: string;
+          tracking_number: string | null;
+          status: LogisticsStatus;
+          origin_country: string | null;
+          origin_city: string | null;
+          destination_country: string;
+          destination_city: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          auction_id?: string | null;
+          order_id?: string | null;
+          provider_name: string;
+          service_type: ServiceType;
+          estimated_days?: number | null;
+          cost: number;
+          currency?: string;
+          tracking_number?: string | null;
+          status?: LogisticsStatus;
+          origin_country?: string | null;
+          origin_city?: string | null;
+          destination_country: string;
+          destination_city?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          auction_id?: string | null;
+          order_id?: string | null;
+          provider_name?: string;
+          service_type?: ServiceType;
+          estimated_days?: number | null;
+          cost?: number;
+          currency?: string;
+          tracking_number?: string | null;
+          status?: LogisticsStatus;
+          origin_country?: string | null;
+          origin_city?: string | null;
+          destination_country?: string;
+          destination_city?: string | null;
           created_at?: string;
           updated_at?: string;
         };
