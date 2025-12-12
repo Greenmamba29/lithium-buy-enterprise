@@ -176,11 +176,53 @@ export async function readinessCheck(_req: Request, res: Response) {
 }
 
 /**
+ * Database health check endpoint
+ * Returns 200 if database is accessible
+ */
+async function databaseHealthCheck(_req: Request, res: Response) {
+  const dbStatus = await checkDatabase();
+
+  if (dbStatus.status !== "healthy") {
+    return res.status(500).json({ ok: false, error: dbStatus.error });
+  }
+
+  return res.json({ ok: true });
+}
+
+/**
+ * Full health check endpoint for /api/health/full
+ */
+async function fullHealthCheck(_req: Request, res: Response) {
+  const [database, redis, externalAPIs] = await Promise.all([
+    checkDatabase(),
+    checkRedis(),
+    checkExternalAPIs(),
+  ]);
+
+  return res.json({
+    ok: database.status === "healthy",
+    db: database.status === "healthy",
+    redis: redis.status,
+    external: "configured",
+    dependencies: {
+      database,
+      redis,
+      external_apis: externalAPIs,
+    },
+  });
+}
+
+/**
  * Register health check routes
  */
 export function registerHealthRoutes(app: Express) {
+  // Basic health check (no /api prefix)
   app.get("/health", healthCheck);
   app.get("/ready", readinessCheck);
+
+  // API health routes (with /api prefix for production checks)
+  app.get("/api/health/db", databaseHealthCheck);
+  app.get("/api/health/full", fullHealthCheck);
 }
 
 
