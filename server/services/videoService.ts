@@ -143,7 +143,6 @@ export async function deleteMeetingRoom(roomName: string): Promise<void> {
         },
       });
 
-<<<<<<< HEAD
       if (!response.ok && response.status !== 404) {
         throw new Error(`Daily.co API error: ${response.statusText}`);
       }
