@@ -38,7 +38,7 @@ async function checkDatabase(): Promise<{ status: string; error?: string }> {
 async function checkRedis(): Promise<{ status: string; error?: string }> {
   try {
     if (!process.env.REDIS_URL && !process.env.UPSTASH_REDIS_REST_URL) {
-      return { status: "not_configured" };
+      return { status: "not_configured", error: undefined };
     }
 
     // For Upstash REST API, we can test by making a simple request
@@ -104,7 +104,7 @@ async function checkExternalAPIs(): Promise<{
         signal: AbortSignal.timeout(3000), // 3 second timeout
       });
       results.daily = response.ok
-        ? { status: "healthy" }
+        ? { status: "healthy", error: undefined }
         : { status: "unhealthy", error: `HTTP ${response.status}` };
     } catch (error) {
       results.daily = {
@@ -116,12 +116,12 @@ async function checkExternalAPIs(): Promise<{
 
   // Check Perplexity (just verify API key format, don't make actual request)
   if (process.env.PERPLEXITY_API_KEY) {
-    results.perplexity = { status: "configured" }; // API key present
+    results.perplexity = { status: "configured", error: undefined }; // API key present
   }
 
   // Check Gemini (just verify API key format)
   if (process.env.GEMINI_API_KEY) {
-    results.gemini = { status: "configured" }; // API key present
+    results.gemini = { status: "configured", error: undefined }; // API key present
   }
 
   // Check DocuSign (verify credentials are present)
@@ -130,7 +130,7 @@ async function checkExternalAPIs(): Promise<{
     process.env.DOCUSIGN_CLIENT_SECRET &&
     process.env.DOCUSIGN_ACCOUNT_ID
   ) {
-    results.docusign = { status: "configured" }; // Credentials present
+    results.docusign = { status: "configured", error: undefined }; // Credentials present
   }
 
   return results;

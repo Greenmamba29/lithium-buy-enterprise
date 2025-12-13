@@ -30,7 +30,7 @@ export function VideoRoom({ meetingUrl, meetingToken, onLeave }: VideoRoomProps)
         setError(null);
         
         // Dynamically import Daily.co iframe API
-        const DailyIframe = (await import('@daily-co/daily-js')).DailyIframe;
+        const { DailyIframe } = await import('@daily-co/daily-js');
         
         if (!videoRef.current || !isMounted) {
           setError('Video container not found');
