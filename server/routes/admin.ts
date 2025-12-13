@@ -105,11 +105,22 @@ export function registerAdminRoutes(app: Express) {
   app.get("/api/admin/dashboard/news", requireAuth, requireRole("admin"), getNews);
   
   // Enhanced analytics routes
-  app.get("/api/admin/analytics/user-growth", requireAuth, requireRole("admin"), getUserGrowth);
-  app.get("/api/admin/analytics/revenue", requireAuth, requireRole("admin"), getRevenueAnalytics);
-  app.get("/api/admin/analytics/activity", requireAuth, requireRole("admin"), getActivityAnalytics);
-  app.get("/api/admin/analytics/market-share", requireAuth, requireRole("admin"), getMarketShare);
-  app.get("/api/admin/analytics/performance", requireAuth, requireRole("admin"), getPerformanceMetrics);
+  app.get("/api/admin/analytics/user-growth", requireAuth, requireRole("admin"), asyncHandler(async (req: Request, res: Response) => {
+    const data = await getUserGrowthData(30);
+    res.json({ data });
+  }));
+  app.get("/api/admin/analytics/revenue", requireAuth, requireRole("admin"), asyncHandler(async (req: Request, res: Response) => {
+    const data = await getRevenueAnalyticsData(30);
+    res.json({ data });
+  }));
+  app.get("/api/admin/analytics/activity", requireAuth, requireRole("admin"), asyncHandler(async (req: Request, res: Response) => {
+    const data = await getActivityAnalyticsData(24);
+    res.json({ data });
+  }));
+  app.get("/api/admin/analytics/market-share", requireAuth, requireRole("admin"), asyncHandler(async (req: Request, res: Response) => {
+    const data = await getMarketShareData();
+    res.json({ data });
+  }));
 }
 
 

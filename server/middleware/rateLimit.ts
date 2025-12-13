@@ -29,7 +29,7 @@ if (
  */
 class UpstashStore implements Store {
   private redis: Redis;
-  private prefix: string;
+  public prefix: string;
 
   constructor(redis: Redis, prefix = "rl:") {
     this.redis = redis;

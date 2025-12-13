@@ -25,8 +25,9 @@ export function VideoRoom({ meetingUrl, meetingToken, onLeave }: VideoRoomProps)
       try {
         // Dynamically import Daily.co iframe API
         // Note: @daily-co/daily-js should be added to package.json if Daily.co integration is needed
-        const dailyModule = await import('@daily-co/daily-js').catch(() => null);
-        if (!dailyModule) {
+        // Using type assertion to avoid TypeScript error when package is not installed
+        const dailyModule = await import('@daily-co/daily-js' as any).catch(() => null);
+        if (!dailyModule || !dailyModule.DailyIframe) {
           setError('Daily.co SDK not available');
           return;
         }
