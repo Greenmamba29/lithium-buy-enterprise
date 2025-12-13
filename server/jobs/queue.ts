@@ -24,11 +24,11 @@ function getConnectionOptions(): ConnectionOptions | undefined {
 // Create queues with optional connection
 // BullMQ allows connection to be undefined when Redis is not configured
 const connectionOpts = getConnectionOptions();
-export const emailQueue = new Queue("emails", connectionOpts ? { connection: connectionOpts } : {});
-
-export const dataSyncQueue = new Queue("data-sync", connectionOpts ? { connection: connectionOpts } : {});
-export const telebuyQueue = new Queue("telebuy", connectionOpts ? { connection: connectionOpts } : {});
-export const perplexityQueue = new Queue("perplexity", connectionOpts ? { connection: connectionOpts } : {});
+const queueOptions = connectionOpts ? { connection: connectionOpts } : undefined;
+export const emailQueue = new Queue("emails", queueOptions);
+export const dataSyncQueue = new Queue("data-sync", queueOptions);
+export const telebuyQueue = new Queue("telebuy", queueOptions);
+export const perplexityQueue = new Queue("perplexity", queueOptions);
 
 /**
  * Email worker
