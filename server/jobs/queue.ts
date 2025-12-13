@@ -47,7 +47,7 @@ export const emailWorker = new Worker(
     const { sendEmailSync } = await import("../services/emailService.js");
     await sendEmailSync(job.data);
   },
-  connectionOpts ? { connection: connectionOpts } : {}
+  queueConfig
 );
 
 /**
@@ -59,7 +59,7 @@ export const dataSyncWorker = new Worker(
     logger.info({ source: "queue", jobId: job.id, jobName: job.name }, "Processing data sync job");
     // Data sync jobs can be added here as needed
   },
-  connectionOpts ? { connection: connectionOpts } : {}
+  queueConfig
 );
 
 /**
@@ -74,7 +74,7 @@ export const telebuyWorker = new Worker(
       await runPostCallAutomation(job.data.sessionId);
     }
   },
-  connectionOpts ? { connection: connectionOpts } : {}
+  queueConfig
 );
 
 /**
@@ -106,7 +106,7 @@ export const perplexityWorker = new Worker(
         logger.warn({ jobName: job.name }, "Unknown Perplexity job name");
     }
   },
-  connectionOpts ? { connection: connectionOpts } : {}
+  queueConfig
 );
 
 /**
