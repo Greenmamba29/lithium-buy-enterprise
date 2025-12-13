@@ -1,4 +1,4 @@
-import { Queue, Worker } from "bullmq";
+import { Queue, Worker, type ConnectionOptions } from "bullmq";
 import { logger } from "../utils/logger.js";
 
 /**
@@ -10,42 +10,25 @@ if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN
   console.warn("Redis not configured. Job queue will not work.");
 }
 
-// Create queues
-export const emailQueue = new Queue("emails", {
-  connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? {
-        host: process.env.UPSTASH_REDIS_REST_URL,
-        password: process.env.UPSTASH_REDIS_REST_TOKEN,
-      }
-    : undefined,
-});
+// Helper to create connection options
+function getConnectionOptions(): ConnectionOptions | undefined {
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    return {
+      host: process.env.UPSTASH_REDIS_REST_URL,
+      password: process.env.UPSTASH_REDIS_REST_TOKEN,
+    } as ConnectionOptions;
+  }
+  return undefined;
+}
 
-export const dataSyncQueue = new Queue("data-sync", {
-  connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? {
-        host: process.env.UPSTASH_REDIS_REST_URL,
-        password: process.env.UPSTASH_REDIS_REST_TOKEN,
-      }
-    : undefined,
-});
+// Create queues with optional connection
+// BullMQ allows connection to be undefined when Redis is not configured
+const connectionOpts = getConnectionOptions();
+export const emailQueue = new Queue("emails", connectionOpts ? { connection: connectionOpts } : {});
 
-export const telebuyQueue = new Queue("telebuy", {
-  connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? {
-        host: process.env.UPSTASH_REDIS_REST_URL,
-        password: process.env.UPSTASH_REDIS_REST_TOKEN,
-      }
-    : undefined,
-});
-
-export const perplexityQueue = new Queue("perplexity", {
-  connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? {
-        host: process.env.UPSTASH_REDIS_REST_URL,
-        password: process.env.UPSTASH_REDIS_REST_TOKEN,
-      }
-    : undefined,
-});
+export const dataSyncQueue = new Queue("data-sync", connectionOpts ? { connection: connectionOpts } : {});
+export const telebuyQueue = new Queue("telebuy", connectionOpts ? { connection: connectionOpts } : {});
+export const perplexityQueue = new Queue("perplexity", connectionOpts ? { connection: connectionOpts } : {});
 
 /**
  * Email worker
@@ -58,14 +41,7 @@ export const emailWorker = new Worker(
     const { sendEmailSync } = await import("../services/emailService.js");
     await sendEmailSync(job.data);
   },
-  {
-    connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-      ? {
-          host: process.env.UPSTASH_REDIS_REST_URL,
-          password: process.env.UPSTASH_REDIS_REST_TOKEN,
-        }
-      : undefined,
-  }
+  connectionOpts ? { connection: connectionOpts } : {}
 );
 
 /**
@@ -77,14 +53,7 @@ export const dataSyncWorker = new Worker(
     logger.info({ source: "queue", jobId: job.id, jobName: job.name }, "Processing data sync job");
     // Data sync jobs can be added here as needed
   },
-  {
-    connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-      ? {
-          host: process.env.UPSTASH_REDIS_REST_URL,
-          password: process.env.UPSTASH_REDIS_REST_TOKEN,
-        }
-      : undefined,
-  }
+  connectionOpts ? { connection: connectionOpts } : {}
 );
 
 /**
@@ -99,14 +68,7 @@ export const telebuyWorker = new Worker(
       await runPostCallAutomation(job.data.sessionId);
     }
   },
-  {
-    connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-      ? {
-          host: process.env.UPSTASH_REDIS_REST_URL,
-          password: process.env.UPSTASH_REDIS_REST_TOKEN,
-        }
-      : undefined,
-  }
+  connectionOpts ? { connection: connectionOpts } : {}
 );
 
 /**
@@ -138,14 +100,7 @@ export const perplexityWorker = new Worker(
         logger.warn({ jobName: job.name }, "Unknown Perplexity job name");
     }
   },
-  {
-    connection: process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-      ? {
-          host: process.env.UPSTASH_REDIS_REST_URL,
-          password: process.env.UPSTASH_REDIS_REST_TOKEN,
-        }
-      : undefined,
-  }
+  connectionOpts ? { connection: connectionOpts } : {}
 );
 
 /**

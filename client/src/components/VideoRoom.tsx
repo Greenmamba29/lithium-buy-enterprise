@@ -15,26 +15,21 @@ export function VideoRoom({ meetingUrl, meetingToken, onLeave }: VideoRoomProps)
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
   const videoRef = useRef<HTMLDivElement>(null);
   const callFrameRef = useRef<any>(null);
-  const MAX_RETRIES = 3;
 
   useEffect(() => {
     let callFrame: any = null;
-    let isMounted = true;
 
     const initDaily = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
-        
         // Dynamically import Daily.co iframe API
-        const DailyIframe = (await import('@daily-co/daily-js')).DailyIframe;
+        // Type declaration exists in global.d.ts
+        const dailyModule = await import('@daily-co/daily-js');
+        const DailyIframe = dailyModule.DailyIframe;
         
-        if (!videoRef.current || !isMounted) {
+        if (!videoRef.current) {
           setError('Video container not found');
-          setIsLoading(false);
           return;
         }
 
@@ -53,46 +48,17 @@ export function VideoRoom({ meetingUrl, meetingToken, onLeave }: VideoRoomProps)
 
         // Set up event listeners
         callFrame.on('loaded', () => {
-          if (isMounted) {
-            setIsLoading(false);
-            setError(null);
-          }
+          setIsLoading(false);
+          setError(null);
         });
 
         callFrame.on('error', (e: any) => {
-          if (!isMounted) return;
-          
-          const errorMsg = e.errorMsg || e.error?.message || 'Video call error';
-          console.error('Daily.co error:', errorMsg, e);
-          
-          // Provide user-friendly error messages
-          let friendlyError = 'Failed to connect to video call. ';
-          if (errorMsg.includes('network') || errorMsg.includes('timeout')) {
-            friendlyError += 'Please check your internet connection.';
-          } else if (errorMsg.includes('permission')) {
-            friendlyError += 'Please allow camera and microphone permissions.';
-          } else if (errorMsg.includes('room') || errorMsg.includes('not found')) {
-            friendlyError += 'The meeting room may not exist or has expired.';
-          } else {
-            friendlyError += 'Please try again.';
-          }
-          
-          setError(friendlyError);
+          setError(e.errorMsg || 'Video call error');
           setIsLoading(false);
-        });
-        
-        callFrame.on('network-quality-change', (e: any) => {
-          if (e.quality === 'very-bad' || e.quality === 'bad') {
-            console.warn('Poor network quality detected:', e.quality);
-          }
-        });
-        
-        callFrame.on('app-message', (e: any) => {
-          console.log('App message received:', e.data);
         });
 
         callFrame.on('participant-left', (e: any) => {
-          if (e.participant.local && isMounted) {
+          if (e.participant.local) {
             onLeave();
           }
         });
@@ -108,26 +74,12 @@ export function VideoRoom({ meetingUrl, meetingToken, onLeave }: VideoRoomProps)
 
         await callFrame.join(joinConfig);
 
-        if (isMounted) {
-          // Set initial video/audio state
-          await callFrame.setLocalVideo(isVideoOn);
-          await callFrame.setLocalAudio(isAudioOn);
-        }
-      } catch (err: any) {
-        if (!isMounted) return;
-        
+        // Set initial video/audio state
+        await callFrame.setLocalVideo(isVideoOn);
+        await callFrame.setLocalAudio(isAudioOn);
+      } catch (err) {
         console.error('Failed to initialize Daily.co:', err);
-        
-        let friendlyError = 'Failed to initialize video call. ';
-        if (err.message?.includes('permission')) {
-          friendlyError += 'Please allow camera and microphone access and try again.';
-        } else if (err.message?.includes('network')) {
-          friendlyError += 'Please check your internet connection and try again.';
-        } else {
-          friendlyError += 'Please refresh the page and try again.';
-        }
-        
-        setError(friendlyError);
+        setError('Failed to initialize video call');
         setIsLoading(false);
       }
     };
@@ -135,12 +87,11 @@ export function VideoRoom({ meetingUrl, meetingToken, onLeave }: VideoRoomProps)
     initDaily();
 
     return () => {
-      isMounted = false;
       if (callFrame) {
         callFrame.destroy().catch(console.error);
       }
     };
-  }, [meetingUrl, meetingToken, onLeave]);
+  }, [meetingUrl, meetingToken, onLeave, isVideoOn, isAudioOn]);
 
   const toggleVideo = async () => {
     if (callFrameRef.current) {
@@ -192,50 +143,12 @@ export function VideoRoom({ meetingUrl, meetingToken, onLeave }: VideoRoomProps)
           </div>
         )}
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center text-white z-10 bg-red-900/50 backdrop-blur-sm">
-            <div className="text-center max-w-md px-4">
-              <p className="text-lg text-red-200 mb-4">{error}</p>
-              <div className="flex gap-4 justify-center">
-                {retryCount < MAX_RETRIES && (
-                  <Button 
-                    onClick={async () => {
-                      setError(null);
-                      setIsLoading(true);
-                      setRetryCount(prev => prev + 1);
-                      
-                      // Clean up existing call frame
-                      if (callFrameRef.current) {
-                        try {
-                          await callFrameRef.current.destroy();
-                        } catch (err) {
-                          console.error('Error destroying call frame:', err);
-                        }
-                        callFrameRef.current = null;
-                      }
-                      
-                      // Re-initialize by triggering a re-render
-                      // The useEffect will run again when we clear the ref
-                      setTimeout(() => {
-                        if (videoRef.current) {
-                          // Force re-initialization by clearing and re-joining
-                          window.location.reload();
-                        }
-                      }, 500);
-                    }}
-                    variant="outline"
-                    className="bg-white/10 border-white/20 hover:bg-white/20"
-                    aria-label="Retry connection"
-                  >
-                    Retry ({MAX_RETRIES - retryCount} left)
-                  </Button>
-                )}
-                <Button 
-                  onClick={handleLeave}
-                  variant="destructive"
-                >
-                  Leave Call
-                </Button>
-              </div>
+          <div className="absolute inset-0 flex items-center justify-center text-white z-10 bg-red-900/50">
+            <div className="text-center">
+              <p className="text-lg text-red-200">{error}</p>
+              <Button onClick={handleLeave} className="mt-4">
+                Leave Call
+              </Button>
             </div>
           </div>
         )}
@@ -248,9 +161,7 @@ export function VideoRoom({ meetingUrl, meetingToken, onLeave }: VideoRoomProps)
               variant={isVideoOn ? "default" : "destructive"}
               size="icon"
               onClick={toggleVideo}
-              disabled={isLoading || !!error}
-              aria-label={isVideoOn ? "Turn off video" : "Turn on video"}
-              title={isVideoOn ? "Turn off video" : "Turn on video"}
+              disabled={isLoading}
             >
               {isVideoOn ? <Video className="h-4 w-4" /> : <VideoOff className="h-4 w-4" />}
             </Button>
@@ -259,9 +170,7 @@ export function VideoRoom({ meetingUrl, meetingToken, onLeave }: VideoRoomProps)
               variant={isAudioOn ? "default" : "destructive"}
               size="icon"
               onClick={toggleAudio}
-              disabled={isLoading || !!error}
-              aria-label={isAudioOn ? "Mute microphone" : "Unmute microphone"}
-              title={isAudioOn ? "Mute microphone" : "Unmute microphone"}
+              disabled={isLoading}
             >
               {isAudioOn ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
             </Button>
@@ -270,9 +179,7 @@ export function VideoRoom({ meetingUrl, meetingToken, onLeave }: VideoRoomProps)
               variant={isScreenSharing ? "default" : "outline"}
               size="icon"
               onClick={toggleScreenShare}
-              disabled={isLoading || !!error}
-              aria-label={isScreenSharing ? "Stop screen sharing" : "Start screen sharing"}
-              title={isScreenSharing ? "Stop screen sharing" : "Start screen sharing"}
+              disabled={isLoading}
             >
               <Monitor className="h-4 w-4" />
             </Button>
@@ -281,8 +188,6 @@ export function VideoRoom({ meetingUrl, meetingToken, onLeave }: VideoRoomProps)
               variant="destructive"
               size="icon"
               onClick={handleLeave}
-              aria-label="Leave call"
-              title="Leave call"
             >
               <X className="h-4 w-4" />
             </Button>
