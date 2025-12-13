@@ -26,15 +26,9 @@ function getConnectionOptions(): ConnectionOptions | undefined {
 const connectionOpts = getConnectionOptions();
 export const emailQueue = new Queue("emails", connectionOpts ? { connection: connectionOpts } : {});
 
-export const dataSyncQueue = new Queue("data-sync", {
-  connection: getConnectionOptions(),
-});
-
+export const dataSyncQueue = new Queue("data-sync", connectionOpts ? { connection: connectionOpts } : {});
 export const telebuyQueue = new Queue("telebuy", connectionOpts ? { connection: connectionOpts } : {});
-
-export const perplexityQueue = new Queue("perplexity", {
-  connection: getConnectionOptions(),
-});
+export const perplexityQueue = new Queue("perplexity", connectionOpts ? { connection: connectionOpts } : {});
 
 /**
  * Email worker
@@ -47,7 +41,7 @@ export const emailWorker = new Worker(
     const { sendEmailSync } = await import("../services/emailService.js");
     await sendEmailSync(job.data);
   },
-  queueConfig
+  connectionOpts ? { connection: connectionOpts } : {}
 );
 
 /**
@@ -59,7 +53,7 @@ export const dataSyncWorker = new Worker(
     logger.info({ source: "queue", jobId: job.id, jobName: job.name }, "Processing data sync job");
     // Data sync jobs can be added here as needed
   },
-  queueConfig
+  connectionOpts ? { connection: connectionOpts } : {}
 );
 
 /**
@@ -74,7 +68,7 @@ export const telebuyWorker = new Worker(
       await runPostCallAutomation(job.data.sessionId);
     }
   },
-  queueConfig
+  connectionOpts ? { connection: connectionOpts } : {}
 );
 
 /**
@@ -106,7 +100,7 @@ export const perplexityWorker = new Worker(
         logger.warn({ jobName: job.name }, "Unknown Perplexity job name");
     }
   },
-  queueConfig
+  connectionOpts ? { connection: connectionOpts } : {}
 );
 
 /**
