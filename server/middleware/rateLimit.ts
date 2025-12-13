@@ -1,5 +1,5 @@
 import { type Express, type Request, type Response } from "express";
-import rateLimit from "express-rate-limit";
+import rateLimit, { type Store, type IncrementResponse } from "express-rate-limit";
 import { Redis } from "@upstash/redis";
 
 /**
@@ -27,7 +27,7 @@ if (
 /**
  * Custom store for express-rate-limit using Upstash Redis
  */
-class UpstashStore implements rateLimit.Store {
+class UpstashStore implements Store {
   private redis: Redis;
   private prefix: string;
 
@@ -36,7 +36,7 @@ class UpstashStore implements rateLimit.Store {
     this.prefix = prefix;
   }
 
-  async increment(key: string): Promise<rateLimit.IncrementResponse> {
+  async increment(key: string): Promise<IncrementResponse> {
     const fullKey = `${this.prefix}${key}`;
     const count = await this.redis.incr(fullKey);
     

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -17,7 +17,8 @@ import CompareBar from '@/components/CompareBar';
 import QuickViewModal from '@/components/QuickViewModal';
 import ComparisonTable from '@/components/ComparisonTable';
 import { GlassCard, GlassCardContent, GlassCardHeader, GlassCardTitle } from '@/components/GlassCard';
-import { useSuppliers, type Supplier } from '@/hooks/useSuppliers';
+import { useSuppliers, type Supplier as ApiSupplier } from '@/hooks/useSuppliers';
+import type { Supplier } from '@/data/suppliers';
 
 const defaultFilters: FilterState = {
   productTypes: [],
@@ -63,10 +64,18 @@ export default function Home() {
   const totalSuppliers = suppliersData?.pagination.total || 0;
 
   // Get compare suppliers from fetched data
+  // Convert API Supplier type to component Supplier type
   const compareSuppliers = useMemo(
-    () => filteredSuppliers.filter((s) => compareIds.includes(s.id)),
+    () => filteredSuppliers.filter((s) => compareIds.includes(s.id)).map((s) => s as unknown as Supplier),
     [filteredSuppliers, compareIds]
   );
+
+  // Handler for quick view that converts API Supplier to component Supplier type
+  // SupplierCard passes Supplier from @/data/suppliers, but we're using ApiSupplier
+  // so we need to handle the type conversion
+  const handleQuickView = useCallback((supplier: any) => {
+    setQuickViewSupplier(supplier as Supplier);
+  }, []);
 
   const handleCompareToggle = (id: string) => {
     setCompareIds((prev) => {
@@ -231,7 +240,7 @@ export default function Home() {
                         supplier={supplier as any}
                         isSelected={compareIds.includes(supplier.id)}
                         onCompareToggle={handleCompareToggle}
-                        onQuickView={setQuickViewSupplier}
+                        onQuickView={handleQuickView}
                       />
                     </div>
                   ))}
