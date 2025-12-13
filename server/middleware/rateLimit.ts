@@ -36,7 +36,7 @@ class UpstashStore implements Store {
     this.prefix = prefix;
   }
 
-  async increment(key: string): Promise<rateLimit.IncrementResponse> {
+  async increment(key: string): Promise<IncrementResponse> {
     const fullKey = `${this.prefix}${key}`;
     const count = await this.redis.incr(fullKey);
     
